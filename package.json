@@ -1,0 +1,33 @@
+{
+  "name": "sharing-setting",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "d2": "^28.3.0",
+    "d2-manifest": "^1.0.0",
+    "d2-ui": "^28.0.5",
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "material-ui": "^1.0.0-beta.20",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-scripts": "1.0.17"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "prebuild": "cd node_modules && cd d2-ui && npm install",
+    "build": "react-scripts build",
+    "postbuild": "d2-manifest package.json build/manifest.webapp && cd build && zip -r sharing-setting.zip . && sudo rm asset-manifest.json && sudo rm service-worker.js",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "manifest.webapp": {
+    "description": "Metadata Sharing",
+    "developer": {
+      "name": "Nguyen Anh Dung - HISPVN"
+    },
+    "icons": {
+      "48": "48.png"
+    }
+  }
+}
