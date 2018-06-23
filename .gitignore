@@ -1,2 +1,8 @@
-/node_modules/
-/build/
+### Intellij ###
+.idea/
+.idea_modules/
+*.iml
+
+### Node.js ###
+node_modules/
+build/
