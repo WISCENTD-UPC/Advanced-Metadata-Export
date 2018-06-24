@@ -5,13 +5,14 @@ import {init} from 'd2/lib/d2';
 import App from './components/App.js'
 import './index.css';
 
-// TODO: Make production ready
-let config = {
-    baseUrl: 'http://10.0.75.1:8082/api',
-    headers: {
-        Authorization: "Basic " + btoa("admin:district"),
+let config = {};
+
+if (process.env.REACT_APP_DHIS2_URL !== undefined) {
+    config.baseUrl = process.env.REACT_APP_DHIS2_URL;
+    config.headers = {
+        Authorization: "Basic " + btoa(process.env.REACT_APP_DHIS2_USERNAME + ':' + process.env.REACT_APP_DHIS2_PASSWORD)
     }
-};
+}
 
 init(config).then(d2 => {
     console.log(d2);
