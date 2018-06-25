@@ -12,6 +12,8 @@
         "d2-utilizr": "^0.2.16",
         "jquery": "^3.3.1",
         "lodash": "^4.17.10",
+        "material-ui": "1.0.0-beta.45",
+        "material-ui-icons": "^1.0.0-beta.36",
         "pouchdb": "^7.0.0",
         "react": "^16.4.1",
         "react-dom": "^16.4.1",
@@ -20,8 +22,9 @@
     },
     "scripts": {
         "start": "react-scripts start",
+        "prebuild": "rm -rf advanced-import-export.zip && rm -rf build/",
         "build": "react-scripts build",
-        "postbuild": "d2-manifest package.json build/manifest.webapp && cd build && zip -r ../advanced-import-export.zip . && sudo rm asset-manifest.json && sudo rm service-worker.js",
+        "postbuild": "d2-manifest package.json build/manifest.webapp && cd build && zip -r ../advanced-import-export.zip . && rm asset-manifest.json && rm service-worker.js && cd ..",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject"
     },
@@ -33,5 +36,6 @@
         "icons": {
             "48": "img/import_export.svg"
         }
-    }
+    },
+    "homepage": "."
 }

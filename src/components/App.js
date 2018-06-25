@@ -1,6 +1,9 @@
 import React from 'react';
 import _ from 'lodash';
 import PouchDB from 'pouchdb';
+
+import D2UIApp from '@dhis2/d2-ui-app';
+import HeaderBar from '@dhis2/d2-ui-header-bar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import "./App.css";
@@ -105,75 +108,79 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <div>
-                <div id="metadata-type-selector">
-                    <div>Please select metadata type:</div>
-                    <div>
-                        <select onChange={this.handleSelectorChange}>
-                            <option value="">Select metadata type</option>
-                            {
-                                _.sortBy(_.uniq(Object.keys(this.state.d2.models).filter(model => {
-                                    return (this.state.d2.models[model].isShareable && this.state.d2.models[model].isMetaData);
-                                }).map(model => {
-                                    return this.state.d2.models[model].name
-                                }))).map((model, index) => {
-                                    return <option key={index}
-                                                   value={this.state.d2.models[model].name}>{this.state.d2.models[model].displayName}</option>
-                                })
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div id="metadata-name-filter-container">
-                    <div>Search:</div>
-                    <div><input type="text" d="metadata-name-filter" onChange={this.handleFilterChange}/></div>
-                </div>
-                <div id="metadata-table-container">
-                    <div id="metadata-table">
+            <D2UIApp>
+                <HeaderBar d2={this.state.d2} />
 
-                        <div className="metadata-table-header-container">
-                            <div className="metadata-table-id-col">Uid</div>
-                            <div className="metadata-table-name-col">Name</div>
+                <div>
+                    <div id="metadata-type-selector">
+                        <div>Please select metadata type:</div>
+                        <div>
+                            <select onChange={this.handleSelectorChange}>
+                                <option value="">Select metadata type</option>
+                                {
+                                    _.sortBy(_.uniq(Object.keys(this.state.d2.models).filter(model => {
+                                        return (this.state.d2.models[model].isShareable && this.state.d2.models[model].isMetaData);
+                                    }).map(model => {
+                                        return this.state.d2.models[model].name
+                                    }))).map((model, index) => {
+                                        return <option key={index}
+                                                       value={this.state.d2.models[model].name}>{this.state.d2.models[model].displayName}</option>
+                                    })
+                                }
+                            </select>
                         </div>
-                        <CircularProgress size={50} style={{display: this.state.loader}}/>
-                        {
-                            this.state.metadata.map((element, index) => {
-                                return (
-                                    <div className="metadata-table-row-container"
-                                         onClick={this.handleAddMetadata(index)}>
-                                        <div className="metadata-table-id-col">{element.id}</div>
-                                        <div className="metadata-table-name-col">{element.name}</div>
-                                    </div>
-
-                                )
-                            })
-                        }
-
                     </div>
-                    <div id="selected-metadata-container">
-                        <div id="selected-metadata-table">
-                            <div className="selected-metadata-table-header-container">
-                                <div className="selected-metadata-table-id-col">Uid</div>
-                                <div className="selected-metadata-table-name-col">Name</div>
-                                <div className="selected-metadata-table-type-col">Type</div>
+                    <div id="metadata-name-filter-container">
+                        <div>Search:</div>
+                        <div><input type="text" d="metadata-name-filter" onChange={this.handleFilterChange}/></div>
+                    </div>
+                    <div id="metadata-table-container">
+                        <div id="metadata-table">
+
+                            <div className="metadata-table-header-container">
+                                <div className="metadata-table-id-col">Uid</div>
+                                <div className="metadata-table-name-col">Name</div>
                             </div>
+                            <CircularProgress size={50} style={{display: this.state.loader}}/>
                             {
-                                this.state.selectedMetadata.map((element, index) => {
+                                this.state.metadata.map((element, index) => {
                                     return (
-                                        <div className="selected-metadata-table-row-container"
-                                             onClick={this.handleRemoveMetadata(index)}>
-                                            <div className="selected-metadata-table-id-col">{element.id}</div>
-                                            <div className="selected-metadata-table-name-col">{element.name}</div>
-                                            <div
-                                                className="selected-metadata-table-type-col">{element.metadataType}</div>
+                                        <div className="metadata-table-row-container"
+                                             onClick={this.handleAddMetadata(index)}>
+                                            <div className="metadata-table-id-col">{element.id}</div>
+                                            <div className="metadata-table-name-col">{element.name}</div>
                                         </div>
+
                                     )
                                 })
                             }
+
+                        </div>
+                        <div id="selected-metadata-container">
+                            <div id="selected-metadata-table">
+                                <div className="selected-metadata-table-header-container">
+                                    <div className="selected-metadata-table-id-col">Uid</div>
+                                    <div className="selected-metadata-table-name-col">Name</div>
+                                    <div className="selected-metadata-table-type-col">Type</div>
+                                </div>
+                                {
+                                    this.state.selectedMetadata.map((element, index) => {
+                                        return (
+                                            <div className="selected-metadata-table-row-container"
+                                                 onClick={this.handleRemoveMetadata(index)}>
+                                                <div className="selected-metadata-table-id-col">{element.id}</div>
+                                                <div className="selected-metadata-table-name-col">{element.name}</div>
+                                                <div
+                                                    className="selected-metadata-table-type-col">{element.metadataType}</div>
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </D2UIApp>
         );
     }
 
