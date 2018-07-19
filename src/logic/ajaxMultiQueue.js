@@ -2,7 +2,6 @@
 * AJAXMultiQueue - A queue for multiple concurrent ajax requests
 * Dual licensed under the MIT and GPL licenses.
 *
-* (c) 2018 Alexis Rico
 * (c) 2013 Amir Grozki
 * (c) 2011 Corey Frang
 */
@@ -14,22 +13,18 @@ export function createAjaxQueue(n) {
 }
 
 function MultiQueue(number) {
-    let queues, i, current = 0;
-    let petitions = new Set();
+    let queues, current = 0;
 
     if (!queues) {
         queues = new Array(number);
 
-        for(i = 0; i < number; i++) {
+        for(let i = 0; i < number; i++) {
             // jQuery on an empty object, we are going to use this as our Queue
             queues[i] = $({});
         }
     }
 
     function queue(ajaxOpts) {
-        if (petitions.has(ajaxOpts.url)) return;
-        petitions.add(ajaxOpts.url);
-
         let jqXHR,
             dfd = $.Deferred(),
             promise = dfd.promise();
@@ -44,10 +39,10 @@ function MultiQueue(number) {
             // proxy abort to the jqXHR if it is active
             if (jqXHR) return jqXHR.abort(statusText);
 
-            let i, queue, index;
+            let queue, index;
 
             // if there wasn't already a jqXHR we need to remove from queue
-            for (i = 0; i < number || index < 0; i++) {
+            for (let i = 0; i < number || index < 0; i++) {
                 queue = queues[current].queue();
                 index = $.inArray(doRequest, queue);
             }
