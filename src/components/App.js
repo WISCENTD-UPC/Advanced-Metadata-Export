@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import HeaderBarComponent from 'd2-ui/lib/app-header/HeaderBar';
 import headerBarStore$ from 'd2-ui/lib/app-header/headerBar.store';
 import withStateFrom from 'd2-ui/lib/component-helpers/withStateFrom';
+import LoadingMask from "d2-ui/lib/loading-mask/LoadingMask.component";
 
 import CircularProgress from 'material-ui/CircularProgress';
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton';
@@ -16,7 +17,6 @@ import theme from "../theme";
 import {MuiThemeProvider} from "material-ui";
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import * as D2Library from "d2/lib/d2";
 injectTapEventPlugin();
 
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
@@ -36,7 +36,8 @@ class App extends React.Component {
             database: this.props.database,
             currentMetadataType: "",
             metadata: [],
-            selectedMetadata: []
+            selectedMetadata: [],
+            isLoading: false
         }
     }
 
@@ -78,7 +79,7 @@ class App extends React.Component {
             return;
         }
 
-        let options = {paging: false};
+        let options = {paging: false, fields: ['id', 'name']};
         if (filterParam !== "") {
             options.filter = `name:ilike:${filterParam}`;
         }
@@ -99,7 +100,7 @@ class App extends React.Component {
         object.metadataType = metadataType;
         selectedMetadata.push(object);
 
-        extractor.fetchAndRetrieve({
+        extractor.initialFetchAndRetrieve({
             d2: this.state.d2,
             database: this.state.database,
             id: object.id,
@@ -113,6 +114,7 @@ class App extends React.Component {
     };
 
     handleRemoveMetadata = (index) => () => {
+        /** TODO: We should remove from database recursively
         let metadata = this.state.metadata;
         let selectedMetadata = this.state.selectedMetadata;
         let object = selectedMetadata.splice(index, 1)[0];
@@ -121,9 +123,13 @@ class App extends React.Component {
             metadata: metadata,
             selectedMetadata: selectedMetadata
         });
+        **/
     };
 
     handleCreatePackage = (event) => {
+        this.setState({
+            isLoading: true
+        });
         extractor.createPackage({
             d2: this.state.d2,
             database: this.state.database
@@ -133,6 +139,9 @@ class App extends React.Component {
                     type: 'application/json',
                     name: 'extraction.json'
                 }), 'extraction.json');
+                this.setState({
+                    isLoading: false
+                });
             });
     };
 
@@ -140,6 +149,16 @@ class App extends React.Component {
         return (
             <MuiThemeProvider muiTheme={theme}>
                 <div>
+                    <div hidden={!this.state.isLoading} style={{position: 'fixed',
+                        top:0,
+                        bottom:0,
+                        left:0,
+                        right:0,
+                        backgroundColor: '#F1F1F1',
+                        opacity:0.8,
+                        zIndex:1001}}>
+                        <LoadingMask large={true}/>
+                    </div>
                     <HeaderBar d2={this.state.d2}/>
                     <div id="metadata-type-selector">
                         <div>Please select metadata type:</div>
