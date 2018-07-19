@@ -1,76 +1,84 @@
+import _ from 'lodash';
 import * as traverse from "traverse";
+import {createAjaxQueue} from "./ajaxMultiQueue";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 let fetchedItems = new Set();
+let ajaxQueue = createAjaxQueue(50);
+
+/**
+ * Fetch and retrieve start point, with a base id to start the query
+ * @param builder: Object with d2, database, id and type
+ */
+export function initialFetchAndRetrieve(builder) {
+    return new Promise(function (resolve, reject) {
+        parseElements(builder.d2, [builder.id]).then((json) => {
+            fetchAndRetrieve({
+                d2: builder.d2,
+                database: builder.database,
+                json: json
+            }).then(() => {
+                console.log('initialFetchAndRetrieve: Finished query for ' + builder.id);
+                resolve();
+            });
+        });
+    });
+}
 
 /**
  * If item does not exists queries d2 to get and store the item
- * @param builder: Object with d2, database, id and type
+ * @param builder: Object with d2, database, json
  */
 export function fetchAndRetrieve(builder) {
-    if (fetchedItems.has(builder.id)) {
-        if (DEBUG) console.log('fetchAndRetrieve: Element ' + builder.id + ' (' + builder.type + ') exists, using local copy');
-    } else {
-        if (DEBUG) console.log('fetchAndRetrieve: Element ' + builder.id + ' (' + builder.type + ') does not exist, parsing it');
-        fetchedItems.add(builder.id);
-        builder.d2.models[builder.type].get(builder.id).then(element => {
-            if (DEBUG) console.log('fetchAndRetrieve: Element ' + builder.id + ' (' + builder.type + ') stored on database');
-            cleanUpElement(element.toJSON()).then((result) => {
-                builder.database.get(builder.id).then(function (doc) {
-                    builder.database.put({
-                        _id: builder.id,
-                        type: builder.type,
-                        json: result,
-                        _rev: doc._rev
-                    });
-                }).catch(function () {
-                    builder.database.put({
-                        _id: builder.id,
-                        type: builder.type,
-                        json: result,
-                    });
-                });
-
-                // Call recursive parsing
-                recursiveParse({
-                    d2: builder.d2,
-                    element: result,
-                    type: builder.type
-                }, (id, type) => {
-                    fetchAndRetrieve({
+    return new Promise(function (resolve, reject) {
+        let arrayOfBrokenPromises = [];
+        _.forEach(builder.json, function (arrayOfElements, type) {
+            _.forEach(arrayOfElements, function (element) {
+                if (element.id !== undefined) {
+                    if (DEBUG) console.log('fetchAndRetrieve: Parsing ' + element.id);
+                    // Insert on the database
+                    arrayOfBrokenPromises.push(insertIfNotExists(builder.database, element, type));
+                    // Traverse references and call recursion
+                    arrayOfBrokenPromises.push(recursiveParse({
                         d2: builder.d2,
-                        database: builder.database,
-                        id: id,
-                        type: type
-                    });
-                });
+                        element: element
+                    }).then((references => {
+                        arrayOfBrokenPromises.push(parseElements(builder.d2, references).then((json) => {
+                            arrayOfBrokenPromises.push(fetchAndRetrieve({
+                                d2: builder.d2,
+                                database: builder.database,
+                                json: json
+                            }));
+                        }));
+                    })));
+                }
             });
         });
-    }
+        Promise.all(arrayOfBrokenPromises).then(() => resolve());
+    });
 }
 
 /**
  * Traverse element and call recursion fetchAndRetrieve
  * @param builder: Object with d2 and element to traverse
- * @param next: Callback with id and type
  */
-export function recursiveParse(builder, next) {
-    traverse(builder.element).forEach(function (item) {
-        let context = this;
-        if (context.isLeaf && context.key === 'id' && item !== '') {
-            let parent = context.parent;
-            while (parent.level > 1) parent = parent.parent;
-            if (parent !== undefined && parent.key !== undefined && builder.d2.models[parent.key] !== undefined) {
-                if (shouldDeepCopy(builder.type, parent.key)) {
-                    if (parent.key === 'children') {
-                        if (DEBUG) console.log('recursiveParse: Children copy of ' + item + ' (' + builder.type + ')');
-                        next(item, builder.type);
-                    } else {
-                        next(item, parent.key);
-                    }
-                } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + parent.key + ')');
+export function recursiveParse(builder) {
+    return new Promise(function (resolve, reject) {
+        let references = [];
+        traverse(builder.element).forEach(function (item) {
+            let context = this;
+            if (context.isLeaf && context.key === 'id' && item !== '') {
+                let parent = context.parent;
+                while (parent.level > 1) parent = parent.parent;
+                if (parent !== undefined && parent.key !== undefined && builder.d2.models[parent.key] !== undefined) {
+                    if (shouldDeepCopy(builder.type, parent.key)) {
+                        let key = parent.key === 'children' ? builder.type : parent.key;
+                        if (!fetchedItems.has(item)) references.push(item);
+                    } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + parent.key + ')');
+                }
             }
-        }
+        });
+        resolve(references);
     });
 }
 
@@ -86,7 +94,7 @@ function shouldDeepCopy(type, key) {
  * @returns {Promise<any>}: Promise that either resolves or rejects
  */
 export function cleanUpElement(element) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         // TODO: Clean up element
         resolve(element);
     });
@@ -117,6 +125,43 @@ export function createPackage(builder, elements) {
         }).catch(function (err) {
             console.log(err);
             reject(err);
+        });
+    });
+}
+
+function parseElements(d2, elements) {
+    return new Promise(function (resolve, reject) {
+        _.difference(elements, [...fetchedItems]);
+        _.forEach(elements, (element) => fetchedItems.add(element));
+        if (elements.length > 0) {
+            let requestUrl = d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
+            if (DEBUG) console.log('parseElements: ' + requestUrl);
+            makeRequest(requestUrl).then((json) => {
+                resolve(json);
+            });
+        }
+    });
+}
+
+function makeRequest(url) {
+    return new Promise(function (resolve, reject) {
+        ajaxQueue.queue({
+            dataType: "json",
+            url: url,
+            success: resolve,
+            fail: reject
+        });
+    });
+}
+
+function insertIfNotExists(database, element, type) {
+    return new Promise(function (resolve, reject) {
+        database.put({
+            _id: element.id,
+            type: type,
+            json: element,
+        }).then(() => resolve()).catch(function (err) {
+            if (err.name !== 'conflict') reject(err);
         });
     });
 }
