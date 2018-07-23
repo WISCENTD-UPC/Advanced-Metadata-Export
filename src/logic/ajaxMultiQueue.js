@@ -18,7 +18,7 @@ function MultiQueue(number) {
     if (!queues) {
         queues = new Array(number);
 
-        for(let i = 0; i < number; i++) {
+        for (let i = 0; i < number; i++) {
             // jQuery on an empty object, we are going to use this as our Queue
             queues[i] = $({});
         }
@@ -35,7 +35,7 @@ function MultiQueue(number) {
         current = (current + 1) % number;
 
         // add the abort method
-        promise.abort = function(statusText) {
+        promise.abort = function (statusText) {
             // proxy abort to the jqXHR if it is active
             if (jqXHR) return jqXHR.abort(statusText);
 

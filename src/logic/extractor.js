@@ -1,23 +1,32 @@
 import _ from 'lodash';
-import * as traverse from "traverse";
-import {createAjaxQueue} from "./ajaxMultiQueue";
+import * as traverse from 'traverse';
+import * as FileSaver from 'file-saver';
+
+import {createAjaxQueue} from './ajaxMultiQueue';
+import {store} from '../store';
+import * as actionTypes from '../actions/actionTypes';
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 let fetchedItems = new Set();
-let ajaxQueue = createAjaxQueue(50);
+let ajaxQueue = createAjaxQueue(25);
 let petitions = new Set();
 let totalRequests = 0, completedRequests = 0;
 
 /**
  * Fetch and retrieve start point, with a base id to start the query
- * @param builder: Object with d2, database, id and type
+ * @param builder: Object with id
+ * @param elements: Elements to fetch
  */
-export function initialFetchAndRetrieve(builder) {
-    parseElements(builder.d2, [builder.id]).then((json) => {
-        fetchAndRetrieve({
-            d2: builder.d2,
-            database: builder.database,
-            json: json
+export function initialFetchAndRetrieve(builder, elements) {
+    return new Promise(function (resolve, reject) {
+        if (elements.length === 0) resolve();
+        else parseElements(builder.d2, elements).then((json) => {
+            fetchAndRetrieve({
+                d2: builder.d2,
+                database: builder.database,
+                json: json
+            });
+            resolve();
         });
     });
 }
@@ -81,13 +90,26 @@ function shouldDeepCopy(type, key) {
     return true;
 }
 
+export function handleCreatePackage(builder, elements) {
+    store.dispatch({type: actionTypes.LOADING, loading: true});
+    fetchedItems.clear();
+    initialFetchAndRetrieve(builder, elements).then(() => {
+        createPackage(builder).then((result) => {
+            FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
+                type: 'application/json',
+                name: 'extraction.json'
+            }), 'extraction.json');
+            store.dispatch({type: actionTypes.LOADING, loading: false});
+        });
+    });
+}
+
 /**
  * Creates an export package
  * @param builder: Object with d2 and database
- * @param elements: Element list to be exported
  * @returns {Promise<any>}: Promise that either resolves or rejects
  */
-export function createPackage(builder, elements) {
+function createPackage(builder) {
     return new Promise(function (resolve, reject) {
         let next = function () {
             if (DEBUG) console.log('Generating final package');
@@ -99,8 +121,10 @@ export function createPackage(builder, elements) {
                 for (let i = 0; i < result.rows.length; ++i) {
                     let element = result.rows[i].doc;
                     let elementType = builder.d2.models[element.type].plural;
-                    if (resultObject[elementType] === undefined) resultObject[elementType] = [];
-                    resultObject[elementType].push(element.json);
+                    if (fetchedItems.has(element._id)) {
+                        if (resultObject[elementType] === undefined) resultObject[elementType] = [];
+                        resultObject[elementType].push(element.json);
+                    }
                 }
                 resolve(resultObject);
             }).catch(function (err) {
@@ -109,7 +133,7 @@ export function createPackage(builder, elements) {
             });
         };
 
-        let _flagCheck = setInterval(function() {
+        let _flagCheck = setInterval(function () {
             if (completedRequests === totalRequests) {
                 clearInterval(_flagCheck);
                 next(); // the function to run once all flags are true
