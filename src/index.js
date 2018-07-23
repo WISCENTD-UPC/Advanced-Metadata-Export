@@ -53,7 +53,8 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
     ReactDOM.render((<div>Failed to connect with D2</div>), document.getElementById('root'));
 });
 
-ReactDOM.render(<MuiThemeProvider muiTheme={theme}><LoadingMask large={true}/></MuiThemeProvider>, document.getElementById('root'));
+ReactDOM.render(<MuiThemeProvider muiTheme={theme}><LoadingMask
+    large={true}/></MuiThemeProvider>, document.getElementById('root'));
 
 function parseMetadataTypes(d2) {
     let metadataTypes = _.uniq(Object.keys(d2.models).filter(model => {

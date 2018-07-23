@@ -12,7 +12,7 @@ export const gridInitialState = {
         name: 'type',
         title: 'Type'
     }],
-    sorting: [{ columnName: 'type', direction: 'asc' }],
+    sorting: [{columnName: 'type', direction: 'asc'}],
     grouping: [{columnName: 'type'}],
     expandedGroups: [],
     selection: [],

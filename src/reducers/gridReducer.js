@@ -1,4 +1,4 @@
-import {GRID_ADD_METADATA, GRID_SELECT_METADATA, GRID_STATE_CHANGE_ACTION} from '../actions/actionTypes';
+import {GRID_ADD_METADATA, GRID_STATE_CHANGE_ACTION} from '../actions/actionTypes';
 import {gridInitialState} from '../actions/gridAction';
 
 const grid = (state = gridInitialState, action) => {

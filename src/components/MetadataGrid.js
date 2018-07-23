@@ -39,7 +39,10 @@ class MetadataGrid extends React.PureComponent {
         } = this.props;
 
         const getRowId = row => row.id;
-        const createPackage = () => extractor.handleCreatePackage({d2: this.props.d2, database: this.props.database}, selection);
+        const createPackage = () => extractor.handleCreatePackage({
+            d2: this.props.d2,
+            database: this.props.database
+        }, selection);
 
         return (
             <Paper>
