@@ -113,7 +113,7 @@ function createPackage(builder) {
     return new Promise(function (resolve, reject) {
         let next = function () {
             if (DEBUG) console.log('Generating final package');
-            let resultObject = {date: Date.now()};
+            let resultObject = {date: new Date().toISOString()};
             builder.database.allDocs({
                 include_docs: true,
             }).then(function (result) {
