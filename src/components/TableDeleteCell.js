@@ -1,9 +1,9 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import {withStyles} from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import IconButton from "@material-ui/core/IconButton/IconButton";
 import DeleteIcon from '@material-ui/icons/Delete';
+import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
     cell: {

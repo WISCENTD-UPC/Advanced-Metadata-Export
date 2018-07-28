@@ -2,8 +2,7 @@ import * as React from 'react';
 import _ from 'lodash';
 import {connect} from "react-redux";
 import Paper from '@material-ui/core/Paper';
-import Button from "@material-ui/core/es/Button/Button";
-import Spacer from 'react-spacer';
+import Button from '@material-ui/core/Button/Button';
 import {
     GroupingState,
     IntegratedFiltering,
@@ -28,8 +27,9 @@ import {Template, TemplatePlaceholder} from '@devexpress/dx-react-core';
 import * as extractor from '../logic/extractor';
 import {createGridAction} from '../actions/gridAction';
 import {TableSelectCell} from './TableSelectCell';
-import {TableDeleteCell} from "./TableDeleteCell";
-import * as actionTypes from "../actions/actionTypes";
+import {TableDeleteCell} from './TableDeleteCell';
+import * as actionTypes from '../actions/actionTypes';
+import Spacer from './Spacer';
 
 
 class MetadataGrid extends React.PureComponent {
@@ -69,11 +69,11 @@ class MetadataGrid extends React.PureComponent {
 
     render() {
         const {
-            rows, columns, selection, searchValue, sorting, grouping, selectionAsIndeterminate
+            rows, columns, selection, searchValue1, searchValue2, sorting, grouping, selectionAsIndeterminate
         } = this.props.grid;
 
         const {
-            onSelectionChange, onSearchValueChange, onSelectionClear, onSortingChange, onGroupingChange
+            onSelectionChange, onSearchValueChange1, onSearchValueChange2, onSelectionClear, onSortingChange, onGroupingChange
         } = this.props;
 
         const createPackage = () => extractor.handleCreatePackage({
@@ -102,8 +102,8 @@ class MetadataGrid extends React.PureComponent {
                             onSelectionChange={onSelectionChange}
                         />
                         <SearchState
-                            value={searchValue}
-                            onValueChange={onSearchValueChange}
+                            value={searchValue1}
+                            onValueChange={onSearchValueChange1}
                         />
 
                         <IntegratedSorting/>
@@ -138,9 +138,14 @@ class MetadataGrid extends React.PureComponent {
                                 selection={selection}
                                 onSelectionChange={onSelectionChange}
                             />
+                            <SearchState
+                                value={searchValue2}
+                                onValueChange={onSearchValueChange2}
+                            />
 
                             <IntegratedSorting/>
                             <IntegratedSelection/>
+                            <IntegratedFiltering/>
 
                             <VirtualTable/>
 
@@ -157,14 +162,14 @@ class MetadataGrid extends React.PureComponent {
                                 <Button onClick={createPackage}>
                                     Export
                                 </Button>
-                                <Spacer grow='1'/>
                                 <Button onClick={onSelectionClear}>
                                     Clear
                                 </Button>
+                                <Spacer grow='1'/>
                             </Template>
+                            <SearchPanel/>
                         </Grid>
                     </Paper>
-
                 </div>
             </div>
         );
@@ -179,7 +184,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onSelectionChange: selection => dispatch(createGridAction('selection', selection)),
-    onSearchValueChange: searchValue => dispatch(createGridAction('searchValue', searchValue)),
+    onSearchValueChange1: searchValue1 => dispatch(createGridAction('searchValue1', searchValue1)),
+    onSearchValueChange2: searchValue2 => dispatch(createGridAction('searchValue2', searchValue2)),
     onSortingChange: sorting => dispatch(createGridAction('sorting', sorting)),
     onGroupingChange: grouping => dispatch(createGridAction('grouping', grouping)),
     onSelectionClear: () => {

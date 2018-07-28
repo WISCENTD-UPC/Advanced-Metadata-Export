@@ -25,7 +25,8 @@ export const gridInitialState = {
     pageSize: 8,
     pageSizes: [5, 8, 16],
     currentPage: 0,
-    searchValue: '',
+    searchValue1: '',
+    searchValue2: '',
     loading: false
 };
 
