@@ -5,8 +5,9 @@
     font-size: 16px;
 }
 
-#root {
-    margin-top: 60px;
+.main-content {
+    display: flex;
+    flex-flow: column nowrap;
 }
 
 #loading {

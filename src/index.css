@@ -3,3 +3,14 @@ body {
     padding: 0;
     font-family: sans-serif;
 }
+
+.main-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+}
+
+.selected-metadata-container {
+    display: flex;
+    flex-flow: column nowrap;
+}

@@ -74,7 +74,7 @@ function parseMetadataTypes(d2) {
                 })
             });
             store.dispatch({type: actionTypes.GRID_ADD_METADATA, metadata});
-            if (--parsedElements === 0) store.dispatch({type: actionTypes.LOADING, loading: false});
+            if (--parsedElements === 1) store.dispatch({type: actionTypes.LOADING, loading: false});
         }).catch(() => parsedElements -= 1);
     });
 }

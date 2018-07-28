@@ -14,7 +14,7 @@ let totalRequests = 0, completedRequests = 0;
 
 /**
  * Fetch and retrieve start point, with a base id to start the query
- * @param builder: Object with id
+ * @param builder: Object with d2 and database
  * @param elements: Elements to fetch
  */
 export function initialFetchAndRetrieve(builder, elements) {
@@ -26,8 +26,15 @@ export function initialFetchAndRetrieve(builder, elements) {
                 database: builder.database,
                 json: json
             });
-            resolve();
         });
+
+        let _flagCheck = setInterval(function () {
+            if (completedRequests === totalRequests) {
+                clearInterval(_flagCheck);
+                store.dispatch({type: actionTypes.GRID_ADD_DEPENDENCIES, dependencies: Array.from(fetchedItems)});
+                resolve(); // the function to run once all flags are true
+            }
+        }, 100); // interval set at 100 milliseconds
     });
 }
 
@@ -92,7 +99,7 @@ function shouldDeepCopy(type, key) {
 
 export function handleCreatePackage(builder, elements) {
     store.dispatch({type: actionTypes.LOADING, loading: true});
-    fetchedItems.clear();
+    clearDependencies();
     initialFetchAndRetrieve(builder, elements).then(() => {
         createPackage(builder).then((result) => {
             FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
@@ -176,4 +183,8 @@ function insertIfNotExists(database, element, type) {
             if (err.name !== 'conflict') reject(err);
         });
     });
+}
+
+export function clearDependencies() {
+    fetchedItems.clear();
 }

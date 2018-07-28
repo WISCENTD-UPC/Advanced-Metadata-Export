@@ -16,6 +16,7 @@ export const gridInitialState = {
     grouping: [{columnName: 'type'}],
     expandedGroups: [],
     selection: [],
+    selectionAsIndeterminate: [],
     expandedRowIds: [],
     filters: [],
     columnOrder: [],
