@@ -19,6 +19,7 @@ let totalRequests = 0, completedRequests = 0;
  */
 export function initialFetchAndRetrieve(builder, elements) {
     return new Promise(function (resolve, reject) {
+        clearDependencies();
         if (elements.length === 0) resolve();
         else parseElements(builder.d2, elements).then((json) => {
             fetchAndRetrieve({
@@ -31,7 +32,8 @@ export function initialFetchAndRetrieve(builder, elements) {
         let _flagCheck = setInterval(function () {
             if (completedRequests === totalRequests) {
                 clearInterval(_flagCheck);
-                store.dispatch({type: actionTypes.GRID_ADD_DEPENDENCIES, dependencies: Array.from(fetchedItems)});
+                store.dispatch({type: actionTypes.GRID_ADD_DEPENDENCIES,
+                    dependencies: _.difference(Array.from(fetchedItems), elements)});
                 resolve(); // the function to run once all flags are true
             }
         }, 100); // interval set at 100 milliseconds
@@ -101,7 +103,7 @@ export function handleCreatePackage(builder, elements) {
     store.dispatch({type: actionTypes.LOADING, loading: true});
     clearDependencies();
     initialFetchAndRetrieve(builder, elements).then(() => {
-        createPackage(builder).then((result) => {
+        createPackage(builder, elements).then((result) => {
             FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
                 type: 'application/json',
                 name: 'extraction.json'
@@ -114,12 +116,14 @@ export function handleCreatePackage(builder, elements) {
 /**
  * Creates an export package
  * @param builder: Object with d2 and database
+ * @param elements: Elements to export
  * @returns {Promise<any>}: Promise that either resolves or rejects
  */
-function createPackage(builder) {
+function createPackage(builder, elements) {
     return new Promise(function (resolve, reject) {
         let next = function () {
             if (DEBUG) console.log('Generating final package');
+            let elementSet = new Set(elements);
             let resultObject = {date: new Date().toISOString()};
             builder.database.allDocs({
                 include_docs: true,
@@ -128,7 +132,7 @@ function createPackage(builder) {
                 for (let i = 0; i < result.rows.length; ++i) {
                     let element = result.rows[i].doc;
                     let elementType = builder.d2.models[element.type].plural;
-                    if (fetchedItems.has(element._id)) {
+                    if (elementSet.has(element._id)) {
                         if (resultObject[elementType] === undefined) resultObject[elementType] = [];
                         resultObject[elementType].push(element.json);
                     }

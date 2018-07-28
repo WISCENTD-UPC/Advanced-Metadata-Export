@@ -10,7 +10,7 @@ body {
     justify-content: space-around;
 }
 
-.selected-metadata-container {
+.export-container {
     display: flex;
     flex-flow: column nowrap;
 }

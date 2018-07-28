@@ -1,8 +1,9 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import Checkbox from '@material-ui/core/Checkbox';
-import TableCell from '@material-ui/core/TableCell';
 import {withStyles} from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import IconButton from "@material-ui/core/IconButton/IconButton";
+import DeleteIcon from '@material-ui/icons/Delete';
 
 const styles = theme => ({
     cell: {
@@ -19,7 +20,7 @@ const styles = theme => ({
     }
 });
 
-export const TableSelectCellBase = ({
+export const TableDeleteCellBase = ({
                                         style,
                                         selected,
                                         onToggle,
@@ -38,18 +39,15 @@ export const TableSelectCellBase = ({
         className={classNames(classes.cell, className)}
         {...restProps}
     >
-        <Checkbox
-            className={classes.checkbox}
-            checked={selected}
-            indeterminate={indeterminate}
-            onClick={e => {
-                e.stopPropagation();
-                onToggle();
-            }}
-        />
+        <IconButton aria-label="Delete" onClick={e => {
+            e.stopPropagation();
+            onDelete();
+        }}>
+            <DeleteIcon />
+        </IconButton>
     </TableCell>
 );
 
-export const TableSelectCell = withStyles(styles, {name: "TableSelectCell"})(
-    TableSelectCellBase
+export const TableDeleteCell = withStyles(styles, {name: "TableDeleteCell"})(
+    TableDeleteCellBase
 );
