@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import TableCell from '@material-ui/core/TableCell';
 import IconButton from "@material-ui/core/IconButton/IconButton";
 import DeleteIcon from '@material-ui/icons/Delete';
-import VisibilityIcon from '@material-ui/icons/Visibility';
 import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
