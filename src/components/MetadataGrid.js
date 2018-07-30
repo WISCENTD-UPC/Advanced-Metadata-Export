@@ -44,11 +44,21 @@ class MetadataGrid extends React.PureComponent {
     selectCell({ row, selected, ...restProps }) {
         const indeterminate = this.props.grid.selectionAsIndeterminate.findIndex(index => this.getRowId(row) === index) !== -1;
         const onDelete = (id) => this.props.grid.selectionAsIndeterminate.clear();
+
+        const onViewDetail = () => {
+            this.props.database.get(this.getRowId(row)).then((doc) => {
+                this.props.showJsonDialog(doc.json);
+            }).catch(() => {
+                this.props.showSnackbar('Item not fetched yet');
+            });
+        };
+
         return (
             <TableSelectCell
                 indeterminate={!selected && indeterminate}
                 selected={selected}
                 onDelete={onDelete}
+                onViewDetail={onViewDetail}
                 {...restProps}
             />
         );
@@ -211,6 +221,10 @@ const mapDispatchToProps = dispatch => ({
     showJsonDialog: (json) => {
         dispatch({type: actionTypes.DIALOG_JSON_UPDATE, json});
         dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: true});
+    },
+    showSnackbar: (message) => {
+        dispatch({type: actionTypes.SNACKBAR_UPDATE, message});
+        dispatch({type: actionTypes.SNACKBAR_SHOW, show: true});
     }
 });
 

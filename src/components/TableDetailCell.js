@@ -36,17 +36,12 @@ export const TableDetailCellBase = ({
                                         ...restProps
                                     }) => (
     <TableCell
+        padding="checkbox"
         style={style}
         className={classNames(classes.cell, className)}
         {...restProps}
     >
-        <div style={{display: "flex", flexFlow: "row nowrap"}}>
-            <IconButton aria-label="View" onClick={e => {
-                e.stopPropagation();
-                onViewDetail();
-            }}>
-                <VisibilityIcon/>
-            </IconButton>
+        <div id="checkbox" style={{display: "flex", flexFlow: "row nowrap"}}>
             <IconButton aria-label="Delete" onClick={e => {
                 e.stopPropagation();
                 onDelete();

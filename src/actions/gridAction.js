@@ -12,9 +12,6 @@ export const gridInitialState = {
         name: 'type',
         title: 'Type'
     }],
-    tableColumnExtensions: [
-        { columnName: 'id', align: 'center' } // TODO: This fixes detailCell bug
-    ],
     sorting: [{columnName: 'type', direction: 'asc'}],
     grouping: [{columnName: 'type'}],
     expandedGroups: [],

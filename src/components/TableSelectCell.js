@@ -3,6 +3,8 @@ import classNames from 'classnames';
 import Checkbox from '@material-ui/core/Checkbox';
 import TableCell from '@material-ui/core/TableCell';
 import withStyles from '@material-ui/core/styles/withStyles';
+import IconButton from "@material-ui/core/IconButton/IconButton";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 
 const styles = theme => ({
     cell: {
@@ -13,9 +15,7 @@ const styles = theme => ({
     },
     checkbox: {
         marginTop: "-1px",
-        marginBottom: "-1px",
-        width: theme.spacing.unit * 5,
-        height: theme.spacing.unit * 5
+        marginBottom: "-1px"
     }
 });
 
@@ -24,6 +24,7 @@ export const TableSelectCellBase = ({
                                         selected,
                                         onToggle,
                                         onDelete,
+                                        onViewDetail,
                                         classes,
                                         className,
                                         row,
@@ -38,15 +39,23 @@ export const TableSelectCellBase = ({
         className={classNames(classes.cell, className)}
         {...restProps}
     >
-        <Checkbox
-            className={classes.checkbox}
-            checked={selected}
-            indeterminate={indeterminate}
-            onClick={e => {
+        <div style={{display: "flex", flexFlow: "row nowrap"}}>
+            <Checkbox
+                className={classes.checkbox}
+                checked={selected}
+                indeterminate={indeterminate}
+                onClick={e => {
+                    e.stopPropagation();
+                    onToggle();
+                }}
+            />
+            <IconButton aria-label="View" onClick={e => {
                 e.stopPropagation();
-                onToggle();
-            }}
-        />
+                onViewDetail();
+            }}>
+                <VisibilityIcon/>
+            </IconButton>
+        </div>
     </TableCell>
 );
 
