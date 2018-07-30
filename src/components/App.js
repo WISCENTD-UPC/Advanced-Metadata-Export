@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {MuiThemeProvider} from 'material-ui';
@@ -8,9 +9,16 @@ import headerBarStore$ from 'd2-ui/lib/app-header/headerBar.store';
 import withStateFrom from 'd2-ui/lib/component-helpers/withStateFrom';
 import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
 
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import Button from '@material-ui/core/Button/Button';
+import Tooltip from '@material-ui/core/Tooltip/Tooltip';
+
 import MetadataGrid from './MetadataGrid';
+import JsonDialog from './JsonDialog';
 import './App.css';
 import theme from './Theme';
+import * as extractor from "../logic/extractor";
+import * as actionTypes from "../actions/actionTypes";
 
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
@@ -22,6 +30,17 @@ class App extends React.Component {
     }
 
     render() {
+        const createPackage = () => extractor.handleCreatePackage({
+            d2: this.props.d2,
+            database: this.props.database
+        }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
+
+        const {
+            dialogOpen, dialogJson
+        } = this.props.dialog;
+
+        const dialogClose = () => this.props.hideJsonDialog();
+
         return (
             <MuiThemeProvider muiTheme={theme}>
                 <div>
@@ -32,6 +51,12 @@ class App extends React.Component {
                         <HeaderBar d2={this.props.d2}/>
                         <MetadataGrid />
                     </div>
+                    <Tooltip title="Export" placement="top">
+                        <Button id="fab" variant="fab" onClick={createPackage}>
+                            <ArrowDownwardIcon style={{color: "white"}} />
+                        </Button>
+                    </Tooltip>
+                    <JsonDialog open={dialogOpen}json={dialogJson} onClose={dialogClose} />
                 </div>
             </MuiThemeProvider>
         );
@@ -45,10 +70,16 @@ App.childContextTypes = {
 const mapStateToProps = state => ({
     d2: state.d2,
     database: state.database,
-    loading: state.loading
+    loading: state.loading,
+    grid: state.grid,
+    dialog: state.dialog
 });
 
-const mapDispatchToProps = dispatch => ({});
+const mapDispatchToProps = dispatch => ({
+    hideJsonDialog: (title, json) => {
+        dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: false});
+    }
+});
 
 export default connect(
     mapStateToProps,

@@ -4,7 +4,7 @@ import {
     GRID_ADD_DEPENDENCIES,
     GRID_ADD_METADATA,
     GRID_REMOVE_FROM_SELECTION,
-    GRID_STATE_CHANGE_ACTION
+    GRID_STATE_CHANGE
 } from '../actions/actionTypes';
 import {gridInitialState} from '../actions/gridAction';
 import * as extractor from "../logic/extractor";
@@ -12,7 +12,7 @@ import * as extractor from "../logic/extractor";
 const grid = (state = gridInitialState, action) => {
     let newState = {...state};
     switch (action.type) {
-        case GRID_STATE_CHANGE_ACTION:
+        case GRID_STATE_CHANGE:
             if (action.partialStateName === 'selection') {
                 newState.selectionAsIndeterminate = _.difference(state.selectionAsIndeterminate,
                     _.difference(state.selection, action.partialStateValue));

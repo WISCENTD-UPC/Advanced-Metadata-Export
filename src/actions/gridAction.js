@@ -1,4 +1,4 @@
-import {GRID_STATE_CHANGE_ACTION} from "./actionTypes";
+import {GRID_STATE_CHANGE} from "./actionTypes";
 
 export const gridInitialState = {
     rows: [],
@@ -12,6 +12,9 @@ export const gridInitialState = {
         name: 'type',
         title: 'Type'
     }],
+    tableColumnExtensions: [
+        { columnName: 'id', align: 'center' } // TODO: This fixes detailCell bug
+    ],
     sorting: [{columnName: 'type', direction: 'asc'}],
     grouping: [{columnName: 'type'}],
     expandedGroups: [],
@@ -31,7 +34,7 @@ export const gridInitialState = {
 };
 
 export const createGridAction = (partialStateName, partialStateValue) => ({
-    type: GRID_STATE_CHANGE_ACTION,
+    type: GRID_STATE_CHANGE,
     partialStateName,
     partialStateValue
 });

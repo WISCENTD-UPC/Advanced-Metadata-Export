@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import TableCell from '@material-ui/core/TableCell';
 import IconButton from "@material-ui/core/IconButton/IconButton";
 import DeleteIcon from '@material-ui/icons/Delete';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import withStyles from '@material-ui/core/styles/withStyles';
 
 const styles = theme => ({
@@ -20,11 +21,12 @@ const styles = theme => ({
     }
 });
 
-export const TableDeleteCellBase = ({
+export const TableDetailCellBase = ({
                                         style,
                                         selected,
                                         onToggle,
                                         onDelete,
+                                        onViewDetail,
                                         classes,
                                         className,
                                         row,
@@ -34,20 +36,27 @@ export const TableDeleteCellBase = ({
                                         ...restProps
                                     }) => (
     <TableCell
-        padding="checkbox"
         style={style}
         className={classNames(classes.cell, className)}
         {...restProps}
     >
-        <IconButton aria-label="Delete" onClick={e => {
-            e.stopPropagation();
-            onDelete();
-        }}>
-            <DeleteIcon />
-        </IconButton>
+        <div style={{display: "flex", flexFlow: "row nowrap"}}>
+            <IconButton aria-label="View" onClick={e => {
+                e.stopPropagation();
+                onViewDetail();
+            }}>
+                <VisibilityIcon/>
+            </IconButton>
+            <IconButton aria-label="Delete" onClick={e => {
+                e.stopPropagation();
+                onDelete();
+            }}>
+                <DeleteIcon/>
+            </IconButton>
+        </div>
     </TableCell>
 );
 
-export const TableDeleteCell = withStyles(styles, {name: "TableDeleteCell"})(
-    TableDeleteCellBase
+export const TableDetailCell = withStyles(styles, {name: "TableDetailCell"})(
+    TableDetailCellBase
 );

@@ -27,22 +27,21 @@ import {Template, TemplatePlaceholder} from '@devexpress/dx-react-core';
 import * as extractor from '../logic/extractor';
 import {createGridAction} from '../actions/gridAction';
 import {TableSelectCell} from './TableSelectCell';
-import {TableDeleteCell} from './TableDeleteCell';
+import {TableDetailCell} from './TableDetailCell';
 import * as actionTypes from '../actions/actionTypes';
 import Spacer from './Spacer';
-
 
 class MetadataGrid extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        this.selectedCell = this.selectedCell.bind(this);
-        this.deletedCell = this.deletedCell.bind(this);
+        this.selectCell = this.selectCell.bind(this);
+        this.detailCell = this.detailCell.bind(this);
     }
 
     getRowId = row => row.id;
 
-    selectedCell({ row, selected, ...restProps }) {
+    selectCell({ row, selected, ...restProps }) {
         const indeterminate = this.props.grid.selectionAsIndeterminate.findIndex(index => this.getRowId(row) === index) !== -1;
         const onDelete = (id) => this.props.grid.selectionAsIndeterminate.clear();
         return (
@@ -55,13 +54,21 @@ class MetadataGrid extends React.PureComponent {
         );
     }
 
-    deletedCell({ row, selected, ...restProps }) {
+    detailCell({ row, selected, ...restProps }) {
         const onDelete = () => {
             this.props.removeFromSelection(this.getRowId(row));
         };
+
+        const onViewDetail = () => {
+            this.props.database.get(this.getRowId(row)).then((doc) => {
+                this.props.showJsonDialog(doc.json);
+            });
+        };
+
         return (
-            <TableDeleteCell
+            <TableDetailCell
                 onDelete={onDelete}
+                onViewDetail={onViewDetail}
                 {...restProps}
             />
         );
@@ -69,17 +76,16 @@ class MetadataGrid extends React.PureComponent {
 
     render() {
         const {
-            rows, columns, selection, searchValue1, searchValue2, sorting, grouping, selectionAsIndeterminate
+            rows, columns, selection, searchValue1, searchValue2, sorting, grouping, selectionAsIndeterminate, tableColumnExtensions
         } = this.props.grid;
 
         const {
             onSelectionChange, onSearchValueChange1, onSearchValueChange2, onSelectionClear, onSortingChange, onGroupingChange
         } = this.props;
 
-        const createPackage = () => extractor.handleCreatePackage({
-            d2: this.props.d2,
-            database: this.props.database
-        }, _.concat(selection, ...selectionAsIndeterminate));
+        const openOptions = () => {
+
+        };
 
         return (
             <div className="main-container" style={{margin: "1em", marginTop: "3em"}}>
@@ -116,10 +122,19 @@ class MetadataGrid extends React.PureComponent {
                         <TableHeaderRow/>
                         <TableGroupRow/>
                         <TableSelection
-                            selectByRowClick cellComponent={this.selectedCell}
+                            selectByRowClick cellComponent={this.selectCell}
                         />
 
                         <Toolbar/>
+                        <Template
+                            name="toolbarContent"
+                        >
+                            <TemplatePlaceholder/>
+                            <Button onClick={openOptions}>
+                                Options
+                            </Button>
+                            <Spacer grow='1'/>
+                        </Template>
                         <SearchPanel/>
                     </Grid>
                 </Paper>
@@ -147,11 +162,13 @@ class MetadataGrid extends React.PureComponent {
                             <IntegratedSelection/>
                             <IntegratedFiltering/>
 
-                            <VirtualTable/>
+                            <VirtualTable
+                                columnExtensions={tableColumnExtensions}
+                            />
 
                             <TableHeaderRow/>
                             <TableSelection
-                                cellComponent={this.deletedCell}
+                                cellComponent={this.detailCell}
                             />
 
                             <Toolbar/>
@@ -159,9 +176,6 @@ class MetadataGrid extends React.PureComponent {
                                 name="toolbarContent"
                             >
                                 <TemplatePlaceholder/>
-                                <Button onClick={createPackage}>
-                                    Export
-                                </Button>
                                 <Button onClick={onSelectionClear}>
                                     Clear
                                 </Button>
@@ -193,7 +207,11 @@ const mapDispatchToProps = dispatch => ({
         dispatch(createGridAction('selectionAsIndeterminate', []));
         extractor.clearDependencies();
     },
-    removeFromSelection: id => dispatch({type: actionTypes.GRID_REMOVE_FROM_SELECTION, id: id})
+    removeFromSelection: id => dispatch({type: actionTypes.GRID_REMOVE_FROM_SELECTION, id: id}),
+    showJsonDialog: (json) => {
+        dispatch({type: actionTypes.DIALOG_JSON_UPDATE, json});
+        dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: true});
+    }
 });
 
 export default connect(
