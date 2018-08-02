@@ -8,7 +8,7 @@ Allows to create packages of metadata with their own dependencies.
 
 ```
 REACT_APP_DEBUG=true
-REACT_APP_DHIS2_BASE_URL=http://who-dev.essi.upc.edu:8081/api
+REACT_APP_DHIS2_BASE_URL=http://who-dev.essi.upc.edu:8081
 REACT_APP_DHIS2_USERNAME=username
 REACT_APP_DHIS2_PASSWORD=password
 ```

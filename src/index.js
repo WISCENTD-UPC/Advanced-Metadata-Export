@@ -20,8 +20,8 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
     let config = {};
 
     // Set baseUrl
-    config.baseUrl = manifest.activities !== undefined ? manifest.activities.dhis.href
-        : process.env.REACT_APP_DHIS2_BASE_URL !== undefined ? process.env.REACT_APP_DHIS2_BASE_URL
+    config.baseUrl = manifest.activities !== undefined ? manifest.activities.dhis.href + '/api'
+        : process.env.REACT_APP_DHIS2_BASE_URL !== undefined ? process.env.REACT_APP_DHIS2_BASE_URL + '/api'
             : config.baseUrl = window.location.href.includes('/api') ? window.location.href.split('/api')[0] + '/api'
                 : undefined;
 
