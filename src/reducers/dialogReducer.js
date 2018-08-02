@@ -1,13 +1,22 @@
 import * as actionTypes from "../actions/actionTypes";
 
-const dialog = (state = {dialogOpen: false, snackbarOpen: false, snackbarMessage: '', dialogJson: ''}, action) => {
+const dialog = (state = {
+    optionsDialogOpen: false,
+    jsonDialogOpen: false,
+    snackbarOpen: false,
+    jsonDialogMessage: '',
+    snackbarMessage: ''
+}, action) => {
     let newState = {...state};
     switch (action.type) {
+        case actionTypes.DIALOG_OPTIONS_SHOW:
+            newState.optionsDialogOpen = action.show;
+            return newState;
         case actionTypes.DIALOG_JSON_UPDATE:
-            newState.dialogJson = action.json;
+            newState.jsonDialogMessage = action.message;
             return newState;
         case actionTypes.DIALOG_JSON_SHOW:
-            newState.dialogOpen = action.show;
+            newState.jsonDialogOpen = action.show;
             return newState;
         case actionTypes.SNACKBAR_UPDATE:
             newState.snackbarMessage = action.message;

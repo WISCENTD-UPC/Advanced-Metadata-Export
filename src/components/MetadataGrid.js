@@ -93,9 +93,7 @@ class MetadataGrid extends React.PureComponent {
             onSelectionChange, onSearchValueChange1, onSearchValueChange2, onSelectionClear, onSortingChange, onGroupingChange
         } = this.props;
 
-        const openOptions = () => {
-
-        };
+        const openOptions = () => this.props.showOptionsDialog();
 
         return (
             <div className="main-container" style={{margin: "1em", marginTop: "3em"}}>
@@ -218,9 +216,12 @@ const mapDispatchToProps = dispatch => ({
         extractor.clearDependencies();
     },
     removeFromSelection: id => dispatch({type: actionTypes.GRID_REMOVE_FROM_SELECTION, id: id}),
-    showJsonDialog: (json) => {
-        dispatch({type: actionTypes.DIALOG_JSON_UPDATE, json});
+    showJsonDialog: (message) => {
+        dispatch({type: actionTypes.DIALOG_JSON_UPDATE, message});
         dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: true});
+    },
+    showOptionsDialog: () => {
+        dispatch({type: actionTypes.DIALOG_OPTIONS_SHOW, show: true});
     },
     showSnackbar: (message) => {
         dispatch({type: actionTypes.SNACKBAR_UPDATE, message});

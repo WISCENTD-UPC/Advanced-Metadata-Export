@@ -3,6 +3,7 @@ import database from './databaseReducer';
 import loading from "./loadingReducer";
 import grid from './gridReducer';
 import dialog from "./dialogReducer";
+import settings from "./settingsReducer";
 
 const index = (state = {}, action: Action) => {
     return {
@@ -10,7 +11,8 @@ const index = (state = {}, action: Action) => {
         database: database(state.database, action),
         loading: loading(state.loading, action),
         dialog: dialog(state.dialog, action),
-        grid: grid(state.grid, {...action, d2: state.d2, database: state.database})
+        settings: settings(state.settings, action),
+        grid: grid(state.grid, {...action, d2: state.d2, database: state.database, settings: state.settings})
     };
 };
 

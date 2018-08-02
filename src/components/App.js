@@ -20,6 +20,7 @@ import theme from './Theme';
 import * as extractor from "../logic/extractor";
 import * as actionTypes from "../actions/actionTypes";
 import AlertSnackbar from "./AlertSnackbar";
+import OptionsDialog from "./OptionsDialog";
 
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
@@ -37,7 +38,7 @@ class App extends React.Component {
         }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
 
         const {
-            dialogOpen, dialogJson, snackbarOpen, snackbarMessage
+            jsonDialogOpen, jsonDialogMessage, optionsDialogOpen, optionsDialogMessage, snackbarOpen, snackbarMessage
         } = this.props.dialog;
 
         return (
@@ -55,7 +56,8 @@ class App extends React.Component {
                             <ArrowDownwardIcon style={{color: "white"}} />
                         </Button>
                     </Tooltip>
-                    <JsonDialog open={dialogOpen} json={dialogJson} onClose={this.props.hideJsonDialog} />
+                    <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog} />
+                    <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog} />
                     <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar} />
                 </div>
             </MuiThemeProvider>
@@ -78,6 +80,9 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     hideJsonDialog: () => {
         dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: false});
+    },
+    hideOptionsDialog: () => {
+        dispatch({type: actionTypes.DIALOG_OPTIONS_SHOW, show: false});
     },
     hideSnackbar: () => {
         dispatch({type: actionTypes.SNACKBAR_SHOW, show: false});
