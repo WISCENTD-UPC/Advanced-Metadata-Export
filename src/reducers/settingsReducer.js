@@ -9,7 +9,7 @@ const settings = (state = {
     switch (action.type) {
         case actionTypes.SETTINGS_ORG_UNIT_CHILDREN:
         case actionTypes.SETTINGS_USER_CLEAN_UP:
-            newState[action.type] = action[action.type];
+            newState[action.type] = action.value;
             return newState;
         default:
             return newState;
