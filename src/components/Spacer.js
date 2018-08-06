@@ -8,5 +8,5 @@ export default function Spacer(props) {
         flexShrink: props.shrink
     };
 
-    return React.createElement('div', { style }, props.children)
+    return React.createElement('div', {style}, props.children)
 };

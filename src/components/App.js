@@ -49,16 +49,16 @@ class App extends React.Component {
                     </div>
                     <div>
                         <HeaderBar d2={this.props.d2}/>
-                        <MetadataGrid />
+                        <MetadataGrid/>
                     </div>
                     <Tooltip title="Export" placement="top">
                         <Button id="fab" variant="fab" onClick={createPackage}>
-                            <ArrowDownwardIcon style={{color: "white"}} />
+                            <ArrowDownwardIcon style={{color: "white"}}/>
                         </Button>
                     </Tooltip>
-                    <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog} />
-                    <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog} />
-                    <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar} />
+                    <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog}/>
+                    <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog}/>
+                    <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar}/>
                 </div>
             </MuiThemeProvider>
         );

@@ -9,12 +9,12 @@ export default class JsonDialog extends React.Component {
     };
 
     render() {
-        const { json, ...other } = this.props;
+        const {json, ...other} = this.props;
 
         return (
             <Dialog fullWidth={true} maxWidth={"md"} onClose={this.handleClose} {...other}>
                 <div style={{margin: "2em"}}>
-                    <ReactJson src={json} />
+                    <ReactJson src={json}/>
                 </div>
             </Dialog>
         );

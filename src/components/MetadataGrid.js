@@ -32,6 +32,8 @@ import * as actionTypes from '../actions/actionTypes';
 import Spacer from './Spacer';
 
 class MetadataGrid extends React.PureComponent {
+    getRowId = row => row.id;
+
     constructor(props) {
         super(props);
 
@@ -39,9 +41,7 @@ class MetadataGrid extends React.PureComponent {
         this.detailCell = this.detailCell.bind(this);
     }
 
-    getRowId = row => row.id;
-
-    selectCell({ row, selected, ...restProps }) {
+    selectCell({row, selected, ...restProps}) {
         const indeterminate = this.props.grid.selectionAsIndeterminate.findIndex(index => this.getRowId(row) === index) !== -1;
         const onDelete = (id) => this.props.grid.selectionAsIndeterminate.clear();
 
@@ -64,7 +64,7 @@ class MetadataGrid extends React.PureComponent {
         );
     }
 
-    detailCell({ row, selected, ...restProps }) {
+    detailCell({row, selected, ...restProps}) {
         const onDelete = () => {
             this.props.removeFromSelection(this.getRowId(row));
         };

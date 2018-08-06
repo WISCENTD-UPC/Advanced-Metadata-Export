@@ -15,7 +15,7 @@ class OptionsDialog extends React.Component {
 
     handleClickListItem = item => {
         let index = item.options.findIndex(e => e.key === this.props.settings[item.key]);
-        this.props.changeSettings(item.key, item.options[(index + 1)%item.options.length].key);
+        this.props.changeSettings(item.key, item.options[(index + 1) % item.options.length].key);
     };
 
     render() {
@@ -26,7 +26,8 @@ class OptionsDialog extends React.Component {
                 <List>
                     {optionDialogValues.map(listItem => (
                         <div key={listItem.key}>
-                            <ListItem button aria-label={listItem.value} onClick={() => this.handleClickListItem(listItem)}>
+                            <ListItem button aria-label={listItem.value}
+                                      onClick={() => this.handleClickListItem(listItem)}>
                                 <ListItemText primary={listItem.value}
                                               secondary={listItem.options.find(e => e.key === this.props.settings[listItem.key]).value}/>
                             </ListItem>

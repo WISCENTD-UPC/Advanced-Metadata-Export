@@ -32,8 +32,10 @@ export function initialFetchAndRetrieve(builder, elements) {
         let _flagCheck = setInterval(function () {
             if (completedRequests === totalRequests) {
                 clearInterval(_flagCheck);
-                store.dispatch({type: actionTypes.GRID_ADD_DEPENDENCIES,
-                    dependencies: _.difference(Array.from(fetchedItems), elements)});
+                store.dispatch({
+                    type: actionTypes.GRID_ADD_DEPENDENCIES,
+                    dependencies: _.difference(Array.from(fetchedItems), elements)
+                });
                 resolve(); // the function to run once all flags are true
             }
         }, 100); // interval set at 100 milliseconds
