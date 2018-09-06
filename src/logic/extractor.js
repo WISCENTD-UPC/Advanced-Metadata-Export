@@ -5,6 +5,7 @@ import * as FileSaver from 'file-saver';
 import {createAjaxQueue} from './ajaxMultiQueue';
 import {store} from '../store';
 import * as actionTypes from '../actions/actionTypes';
+import * as settingsAction from "../actions/settingsAction";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 let fetchedItems = new Set();
@@ -46,7 +47,7 @@ export function initialFetchAndRetrieve(builder, elements) {
  * If item does not exists queries d2 to get and store the item
  * @param builder: Object with d2, database, json
  */
-export function fetchAndRetrieve(builder) {
+function fetchAndRetrieve(builder) {
     _.forEach(builder.json, function (arrayOfElements, type) {
         _.forEach(arrayOfElements, function (element) {
             if (element.id !== undefined) {
@@ -75,7 +76,7 @@ export function fetchAndRetrieve(builder) {
  * Traverse element and call recursion fetchAndRetrieve
  * @param builder: Object with d2 and element to traverse
  */
-export function recursiveParse(builder) {
+function recursiveParse(builder) {
     return new Promise(function (resolve, reject) {
         let references = [];
         traverse(builder.element).forEach(function (item) {
@@ -83,11 +84,15 @@ export function recursiveParse(builder) {
             if (context.isLeaf && context.key === 'id' && item !== '') {
                 let parent = context.parent;
                 while (parent.level > 1) parent = parent.parent;
-                if (parent !== undefined && parent.key !== undefined && builder.d2.models[parent.key] !== undefined) {
+
+                if (parent !== undefined && parent.key !== undefined &&
+                    builder.d2.models[parent.key] !== undefined) {
                     let key = parent.key === 'children' ? builder.type : parent.key;
                     if (shouldDeepCopy(builder.type, parent.key)) {
-                        if (!fetchedItems.has(item)) references.push(item);
-                    } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
+                        if (!fetchedItems.has(item))
+                            references.push(item);
+                    } else if (DEBUG)
+                        console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
                 }
             }
         });
@@ -95,10 +100,28 @@ export function recursiveParse(builder) {
     });
 }
 
-function shouldDeepCopy(type, key) {
-    if (key === 'user' || key === 'users') return false;
-    else if (key === 'organisationUnit' || key === 'organisationUnits') return false;
-    return true;
+function parseElements(d2, elements) {
+    return new Promise(function (resolve, reject) {
+        _.difference(elements, [...fetchedItems]);
+        _.forEach(elements, (element) => fetchedItems.add(element));
+        if (elements.length > 0) {
+            let requestUrl = d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
+            if (!petitions.has(requestUrl)) {
+                if (DEBUG) console.log('parseElements: ' + requestUrl);
+                totalRequests += 1;
+                ajaxQueue.queue({
+                    dataType: "json",
+                    url: requestUrl,
+                    success: function (json) {
+                        completedRequests += 1;
+                        resolve(json);
+                    },
+                    fail: reject
+                });
+            }
+            petitions.add(requestUrl);
+        }
+    });
 }
 
 export function handleCreatePackage(builder, elements) {
@@ -130,13 +153,12 @@ function createPackage(builder, elements) {
             builder.database.allDocs({
                 include_docs: true,
             }).then(function (result) {
-                // handle result
                 for (let i = 0; i < result.rows.length; ++i) {
                     let element = result.rows[i].doc;
                     let elementType = builder.d2.models[element.type].plural;
                     if (elementSet.has(element._id)) {
                         if (resultObject[elementType] === undefined) resultObject[elementType] = [];
-                        resultObject[elementType].push(element.json);
+                        resultObject[elementType].push(cleanJson(element.json));
                     }
                 }
                 resolve(resultObject);
@@ -155,30 +177,6 @@ function createPackage(builder, elements) {
     });
 }
 
-function parseElements(d2, elements) {
-    return new Promise(function (resolve, reject) {
-        _.difference(elements, [...fetchedItems]);
-        _.forEach(elements, (element) => fetchedItems.add(element));
-        if (elements.length > 0) {
-            let requestUrl = d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
-            if (!petitions.has(requestUrl)) {
-                if (DEBUG) console.log('parseElements: ' + requestUrl);
-                totalRequests += 1;
-                ajaxQueue.queue({
-                    dataType: "json",
-                    url: requestUrl,
-                    success: function (json) {
-                        completedRequests += 1;
-                        resolve(json);
-                    },
-                    fail: reject
-                });
-            }
-            petitions.add(requestUrl);
-        }
-    });
-}
-
 function insertIfNotExists(database, element, type) {
     return new Promise(function (resolve, reject) {
         database.put({
@@ -193,4 +191,20 @@ function insertIfNotExists(database, element, type) {
 
 export function clearDependencies() {
     fetchedItems.clear();
+}
+
+function shouldDeepCopy(type, key) {
+    if (key === 'user' || key === 'users') return false;
+    else if (key === 'organisationUnit' || key === 'organisationUnits') return false;
+    else if (key === 'children') return store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN]
+        === settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION;
+    return true;
+}
+
+function cleanJson(json) {
+    let result = json;
+    if (store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP]) {
+        // TODO: Remove the user, userAccesses and userGroupAccesses properties from the JSON
+    }
+    return result;
 }

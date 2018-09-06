@@ -1,8 +1,16 @@
 # DHIS2 Advanced Metadata Export App
 
-Allows to create packages of metadata with their own dependencies.
+This advanced export app allows the user to create packages of metadata with all the required  dependencies for a successful import.
 
-## Development set-up
+## Prepare the environment
+
+All the required dependencies to develop the app can be achieved through npm.
+
+```
+npm install
+```
+
+## Start a development server
 
 - Create .env file with the following content
 
@@ -14,6 +22,8 @@ REACT_APP_DHIS2_PASSWORD=password
 ```
 
 - Launch Chrome with CORS disabled
+
+https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
 
 - Execute development server
 
