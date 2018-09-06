@@ -194,8 +194,7 @@ export function clearDependencies() {
 }
 
 function shouldDeepCopy(type, key) {
-    if (key === 'user' || key === 'users') return store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP]
-        === settingsAction.USER_CLEAN_UP_DEEP_OPTION;
+    if (key === 'user' || key === 'users') return false;
     else if (key === 'organisationUnit' || key === 'organisationUnits') return false;
     else if (key === 'children') return store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN]
         === settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION;

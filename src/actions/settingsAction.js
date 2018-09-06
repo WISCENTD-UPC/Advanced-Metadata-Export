@@ -2,7 +2,6 @@ import * as actionTypes from "../actions/actionTypes";
 
 export const USER_CLEAN_UP_REMOVE_OPTION = 'USER_CLEAN_UP_REMOVE_OPTION';
 export const USER_CLEAN_UP_KEEP_OPTION = 'USER_CLEAN_UP_KEEP_OPTION';
-export const USER_CLEAN_UP_DEEP_OPTION = 'USER_CLEAN_UP_DEEP_OPTION';
 
 export const ORG_UNIT_CHILDREN_PARSE_OPTION = 'ORG_UNIT_CHILDREN_PARSE_OPTION';
 export const ORG_UNIT_CHILDREN_ASSUME_OPTION = 'ORG_UNIT_CHILDREN_ASSUME_OPTION';
@@ -20,10 +19,6 @@ export const optionDialogValues = [
             {
                 key: USER_CLEAN_UP_KEEP_OPTION,
                 value: 'Keep user references'
-            },
-            {
-                key: USER_CLEAN_UP_DEEP_OPTION,
-                value: 'Deep copy user references'
             }
         ]
     },
