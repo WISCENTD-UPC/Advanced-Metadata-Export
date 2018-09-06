@@ -194,7 +194,8 @@ export function clearDependencies() {
 }
 
 function shouldDeepCopy(type, key) {
-    if (key === 'user' || key === 'users') return false;
+    if (key === 'user' || key === 'users') return store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP]
+        === settingsAction.USER_CLEAN_UP_DEEP_OPTION;
     else if (key === 'organisationUnit' || key === 'organisationUnits') return false;
     else if (key === 'children') return store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN]
         === settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION;
@@ -203,8 +204,17 @@ function shouldDeepCopy(type, key) {
 
 function cleanJson(json) {
     let result = json;
-    if (store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP]) {
-        // TODO: Remove the user, userAccesses and userGroupAccesses properties from the JSON
+    if (store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP] === settingsAction.USER_CLEAN_UP_REMOVE_OPTION) {
+        traverse(result).forEach(function (item) {
+            if (this.key === 'user') this.update({});
+            if (this.key === 'userGroupAccesses') this.update([]);
+            if (this.key === 'userAccesses') this.update([]);
+        });
+    }
+    if (store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN] === settingsAction.ORG_UNIT_CHILDREN_REMOVE_OPTION) {
+        traverse(result).forEach(function (item) {
+            if (this.key === 'children') this.update([]);
+        });
     }
     return result;
 }
