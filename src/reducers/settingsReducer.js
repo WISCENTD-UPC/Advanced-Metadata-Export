@@ -2,7 +2,7 @@ import * as actionTypes from "../actions/actionTypes";
 import * as settingsAction from "../actions/settingsAction";
 
 const settings = (state = {
-    SETTINGS_ORG_UNIT_CHILDREN: settingsAction.ORG_UNIT_CHILDREN_ASSUME_OPTION,
+    SETTINGS_ORG_UNIT_CHILDREN: settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION,
     SETTINGS_USER_CLEAN_UP: settingsAction.USER_CLEAN_UP_KEEP_OPTION
 }, action) => {
     let newState = {...state};
