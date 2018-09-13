@@ -38,7 +38,7 @@ class App extends React.Component {
         }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
 
         const {
-            jsonDialogOpen, jsonDialogMessage, optionsDialogOpen, optionsDialogMessage, snackbarOpen, snackbarMessage
+            jsonDialogOpen, jsonDialogMessage, optionsDialogOpen, snackbarOpen, snackbarMessage
         } = this.props.dialog;
 
         return (
