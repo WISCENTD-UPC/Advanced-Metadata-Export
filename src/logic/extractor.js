@@ -84,15 +84,12 @@ function recursiveParse(builder) {
             if (context.isLeaf && context.key === 'id' && item !== '') {
                 let parent = context.parent;
                 while (parent.level > 1) parent = parent.parent;
-
-                if (parent !== undefined && parent.key !== undefined &&
-                    builder.d2.models[parent.key] !== undefined) {
-                    let key = parent.key === 'children' ? builder.type : parent.key;
+                if (parent !== undefined && parent.key !== undefined) {
+                    let key = parent.key === 'children' ? 'organisationUnit' : parent.key;
                     if (shouldDeepCopy(builder.type, parent.key)) {
-                        if (!fetchedItems.has(item))
+                        if (builder.d2.models[key] !== undefined && !fetchedItems.has(item))
                             references.push(item);
-                    } else if (DEBUG)
-                        console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
+                    } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
                 }
             }
         });
