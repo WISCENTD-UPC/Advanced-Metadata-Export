@@ -212,6 +212,7 @@ function cleanJson(json) {
             if (this.key === 'user') this.update({});
             if (this.key === 'userGroupAccesses') this.update([]);
             if (this.key === 'userAccesses') this.update([]);
+            if (this.key === 'lastUpdatedBy') this.update({});
         });
     }
     if (store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN] === settingsAction.ORG_UNIT_CHILDREN_REMOVE_OPTION) {
