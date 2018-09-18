@@ -167,6 +167,9 @@ function createPackage(builder, elements) {
                     if (elementSet.has(element._id)) {
                         if (resultObject[elementType] === undefined) resultObject[elementType] = [];
                         resultObject[elementType].push(cleanJson(element.json));
+                    } else {
+                        // TODO: This should never happen but we should add a fail-safe
+                        if (DEBUG) console.error('[ERROR]: Consistency failure, element not found in database!')
                     }
                 }
                 resolve(resultObject);
