@@ -28,11 +28,11 @@ export const optionDialogValues = [
         options: [
             {
                 key: ORG_UNIT_CHILDREN_PARSE_OPTION,
-                value: 'Parse org unit children'
+                value: 'Fetch org unit children'
             },
             {
                 key: ORG_UNIT_CHILDREN_ASSUME_OPTION,
-                value: 'Assume org unit children'
+                value: 'Assume org unit children [WARNING: Children org units must be added first]'
             },
             {
                 key: ORG_UNIT_CHILDREN_REMOVE_OPTION,
