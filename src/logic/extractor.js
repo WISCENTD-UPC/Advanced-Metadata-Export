@@ -8,9 +8,7 @@ import * as actionTypes from '../actions/actionTypes';
 import * as settingsAction from "../actions/settingsAction";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
-let fetchedItems = new Set();
 let ajaxQueue = createAjaxQueue(25);
-let petitions = new Set();
 let totalRequests = 0, completedRequests = 0;
 
 /**
@@ -20,13 +18,21 @@ let totalRequests = 0, completedRequests = 0;
  */
 export function initialFetchAndRetrieve(builder, elements) {
     return new Promise(function (resolve, reject) {
-        clearDependencies();
+        let fetchedItems = new Set();
+        let petitions = new Set();
         if (elements.length === 0) resolve();
-        else parseElements(builder.d2, elements).then((json) => {
+        else parseElements({
+            d2: builder.d2,
+            fetchedItems,
+            petitions,
+            elements
+        }).then((json) => {
             fetchAndRetrieve({
                 d2: builder.d2,
                 database: builder.database,
-                json: json
+                fetchedItems,
+                petitions,
+                json
             });
         });
 
@@ -35,7 +41,7 @@ export function initialFetchAndRetrieve(builder, elements) {
                 clearInterval(_flagCheck);
                 store.dispatch({
                     type: actionTypes.GRID_ADD_DEPENDENCIES,
-                    dependencies: _.difference(Array.from(fetchedItems), elements)
+                    dependencies: Array.from(fetchedItems)
                 });
                 resolve(); // the function to run once all flags are true
             }
@@ -59,10 +65,17 @@ function fetchAndRetrieve(builder) {
                     d2: builder.d2,
                     element: element
                 }).then((references => {
-                    parseElements(builder.d2, references).then((json) => {
+                    parseElements({
+                        d2: builder.d2,
+                        fetchedItems: builder.fetchedItems,
+                        petitions: builder.petitions,
+                        elements: references
+                    }).then((json) => {
                         fetchAndRetrieve({
                             d2: builder.d2,
                             database: builder.database,
+                            fetchedItems: builder.fetchedItems,
+                            petitions: builder.petitions,
                             json: json
                         });
                     });
@@ -87,7 +100,7 @@ function recursiveParse(builder) {
                 if (parent !== undefined && parent.key !== undefined) {
                     let key = parent.key === 'children' ? 'organisationUnit' : parent.key;
                     if (shouldDeepCopy(builder.type, parent.key)) {
-                        if (builder.d2.models[key] !== undefined && !fetchedItems.has(item))
+                        if (builder.d2.models[key] !== undefined)
                             references.push(item);
                     } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
                 }
@@ -97,13 +110,12 @@ function recursiveParse(builder) {
     });
 }
 
-function parseElements(d2, elements) {
+function parseElements(builder) {
     return new Promise(function (resolve, reject) {
-        _.difference(elements, [...fetchedItems]);
-        _.forEach(elements, (element) => fetchedItems.add(element));
-        if (elements.length > 0) {
-            let requestUrl = d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
-            if (!petitions.has(requestUrl)) {
+        _.forEach(builder.elements, (element) => builder.fetchedItems.add(element));
+        if (builder.elements.length > 0) {
+            let requestUrl = builder.d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + builder.elements.toString() + ']';
+            if (!builder.petitions.has(requestUrl)) {
                 if (DEBUG) console.log('parseElements: ' + requestUrl);
                 totalRequests += 1;
                 ajaxQueue.queue({
@@ -116,14 +128,13 @@ function parseElements(d2, elements) {
                     fail: reject
                 });
             }
-            petitions.add(requestUrl);
+            builder.petitions.add(requestUrl);
         }
     });
 }
 
 export function handleCreatePackage(builder, elements) {
     store.dispatch({type: actionTypes.LOADING, loading: true});
-    clearDependencies();
     initialFetchAndRetrieve(builder, elements).then(() => {
         createPackage(builder, elements).then((result) => {
             FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
@@ -184,10 +195,6 @@ function insertIfNotExists(database, element, type) {
             if (err.name !== 'conflict') reject(err);
         });
     });
-}
-
-export function clearDependencies() {
-    fetchedItems.clear();
 }
 
 function shouldDeepCopy(type, key) {

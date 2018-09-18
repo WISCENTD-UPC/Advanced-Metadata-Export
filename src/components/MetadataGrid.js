@@ -24,7 +24,6 @@ import {
 } from '@devexpress/dx-react-grid-material-ui';
 import {Template, TemplatePlaceholder} from '@devexpress/dx-react-core';
 
-import * as extractor from '../logic/extractor';
 import {createGridAction} from '../actions/gridAction';
 import {TableSelectCell} from './TableSelectCell';
 import {TableDetailCell} from './TableDetailCell';
@@ -213,7 +212,6 @@ const mapDispatchToProps = dispatch => ({
     onSelectionClear: () => {
         dispatch(createGridAction('selection', []));
         dispatch(createGridAction('selectionAsIndeterminate', []));
-        extractor.clearDependencies();
     },
     removeFromSelection: id => dispatch({type: actionTypes.GRID_REMOVE_FROM_SELECTION, id: id}),
     showJsonDialog: (message) => {
