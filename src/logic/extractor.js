@@ -3,6 +3,8 @@ import * as traverse from 'traverse';
 import * as FileSaver from 'file-saver';
 
 import {createAjaxQueue} from './ajaxMultiQueue';
+import * as configuration from "./configuration";
+
 import {store} from '../store';
 import * as actionTypes from '../actions/actionTypes';
 import * as settingsAction from "../actions/settingsAction";
@@ -63,7 +65,8 @@ function fetchAndRetrieve(builder) {
                 // Traverse references and call recursion
                 recursiveParse({
                     d2: builder.d2,
-                    element: element
+                    element: element,
+                    type: builder.d2.models[type].name
                 }).then((references => {
                     parseElements({
                         d2: builder.d2,
@@ -99,10 +102,9 @@ function recursiveParse(builder) {
                 while (parent.level > 1) parent = parent.parent;
                 if (parent !== undefined && parent.key !== undefined) {
                     let key = parent.key === 'children' ? 'organisationUnit' : parent.key;
-                    if (shouldDeepCopy(builder.type, parent.key)) {
-                        if (builder.d2.models[key] !== undefined)
-                            references.push(item);
-                    } else if (DEBUG) console.log('recursiveParse: Shallow copy of ' + item + ' (' + key + ')');
+                    let model = builder.d2.models[key];
+                    if (model !== undefined && shouldDeepCopy(builder.type, model.name))
+                        references.push(item);
                 }
             }
         });
@@ -201,11 +203,19 @@ function insertIfNotExists(database, element, type) {
 }
 
 function shouldDeepCopy(type, key) {
-    if (key === 'user' || key === 'users') return false;
-    else if (key === 'organisationUnit' || key === 'organisationUnits') return false;
-    else if (key === 'children') return store.getState().settings[actionTypes.SETTINGS_ORG_UNIT_CHILDREN]
-        === settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION;
-    return true;
+    let defaultExitCondition = () => true;
+    for (const ruleSet of configuration.dependencyRules) {
+        if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
+            for (const rule of ruleSet.rules) {
+                if (key === rule.metadataType) {
+                    return rule.condition(type);
+                }
+            }
+            if (ruleSet.metadataType !== "*" && ruleSet.defaultCondition !== undefined)
+                defaultExitCondition = ruleSet.defaultCondition;
+        }
+    }
+    return defaultExitCondition();
 }
 
 function cleanJson(json) {
