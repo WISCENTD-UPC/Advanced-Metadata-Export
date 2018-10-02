@@ -104,10 +104,9 @@ function recursiveParse(builder) {
     return new Promise(function (resolve, reject) {
         let references = [];
         traverse(builder.element).forEach(function (item) {
-            let context = this;
-            if (context.isLeaf && context.key === 'id' && item !== '') {
-                if (context.parent !== undefined && context.parent.key !== undefined) {
-                    let key = context.parent.key === 'children' ? 'organisationUnit' : context.parent.key;
+            if (this.isLeaf && this.key === 'id' && item !== '') {
+                if (this.parent !== undefined && this.parent.key !== undefined) {
+                    let key = this.parent.key === 'children' ? 'organisationUnit' : this.parent.key;
                     let model = builder.d2.models[key];
                     if (model !== undefined && shouldDeepCopy(builder.type, model.name))
                         references.push(item);
