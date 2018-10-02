@@ -120,22 +120,21 @@ function recursiveParse(builder) {
 
 function parseElements(builder) {
     return new Promise(function (resolve, reject) {
-        if (builder.elements.length > 0) {
-            let requestUrl = builder.d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + builder.elements.toString() + ']';
-            if (!builder.petitions.has(requestUrl)) {
-                if (DEBUG) console.log('parseElements: ' + requestUrl);
-                totalRequests += 1;
-                ajaxQueue.queue({
-                    dataType: "json",
-                    url: requestUrl,
-                    success: function (json) {
-                        completedRequests += 1;
-                        resolve(json);
-                    },
-                    fail: reject
-                });
-            }
-            builder.petitions.add(requestUrl);
+        let elements = _.uniq([...builder.elements].filter(x => !builder.petitions.has(x)));
+        if (elements.length > 0) {
+            let requestUrl = builder.d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
+            if (DEBUG) console.log('parseElements: ' + requestUrl);
+            totalRequests += 1;
+            ajaxQueue.queue({
+                dataType: "json",
+                url: requestUrl,
+                success: function (json) {
+                    completedRequests += 1;
+                    resolve(json);
+                },
+                fail: reject
+            });
+            _.forEach(elements, (element) => builder.petitions.add(element));
         }
     });
 }
