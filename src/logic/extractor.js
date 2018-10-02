@@ -23,20 +23,22 @@ export function initialFetchAndRetrieve(builder, elements) {
         let fetchedItems = new Set();
         let petitions = new Set();
         if (elements.length === 0) resolve();
-        else parseElements({
-            d2: builder.d2,
-            fetchedItems,
-            petitions,
-            elements
-        }).then((json) => {
-            fetchAndRetrieve({
+        else {
+            parseElements({
                 d2: builder.d2,
-                database: builder.database,
                 fetchedItems,
                 petitions,
-                json
+                elements
+            }).then((json) => {
+                fetchAndRetrieve({
+                    d2: builder.d2,
+                    database: builder.database,
+                    fetchedItems,
+                    petitions,
+                    json
+                });
             });
-        });
+        }
 
         let _flagCheck = setInterval(function () {
             if (completedRequests === totalRequests) {
@@ -59,30 +61,36 @@ function fetchAndRetrieve(builder) {
     _.forEach(builder.json, function (arrayOfElements, type) {
         _.forEach(arrayOfElements, function (element) {
             if (element.id !== undefined) {
-                if (DEBUG) console.log('fetchAndRetrieve: Parsing ' + element.id);
                 // Insert on the database
                 insertIfNotExists(builder.database, element, type);
-                // Traverse references and call recursion
-                recursiveParse({
-                    d2: builder.d2,
-                    element: element,
-                    type: builder.d2.models[type].name
-                }).then((references => {
-                    parseElements({
+
+                // Block circular dependencies
+                if (!builder.fetchedItems.has(element.id)) {
+                    if (DEBUG) console.log('fetchAndRetrieve: Parsing ' + element.id);
+                    builder.fetchedItems.add(element.id);
+
+                    // Traverse references and call recursion
+                    recursiveParse({
                         d2: builder.d2,
-                        fetchedItems: builder.fetchedItems,
-                        petitions: builder.petitions,
-                        elements: references
-                    }).then((json) => {
-                        fetchAndRetrieve({
+                        element: element,
+                        type: builder.d2.models[type].name
+                    }).then((references => {
+                        parseElements({
                             d2: builder.d2,
-                            database: builder.database,
                             fetchedItems: builder.fetchedItems,
                             petitions: builder.petitions,
-                            json: json
+                            elements: references
+                        }).then((json) => {
+                            fetchAndRetrieve({
+                                d2: builder.d2,
+                                database: builder.database,
+                                fetchedItems: builder.fetchedItems,
+                                petitions: builder.petitions,
+                                json: json
+                            });
                         });
-                    });
-                }));
+                    }));
+                }
             }
         });
     });
@@ -112,7 +120,6 @@ function recursiveParse(builder) {
 
 function parseElements(builder) {
     return new Promise(function (resolve, reject) {
-        _.forEach(builder.elements, (element) => builder.fetchedItems.add(element));
         if (builder.elements.length > 0) {
             let requestUrl = builder.d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + builder.elements.toString() + ']';
             if (!builder.petitions.has(requestUrl)) {
@@ -194,8 +201,9 @@ function insertIfNotExists(database, element, type) {
             _id: element.id,
             type: type,
             json: element,
-        }).then(() => resolve()).catch(function (err) {
+        }).then(() => resolve(false)).catch(function (err) {
             if (err.name !== 'conflict') reject(err);
+            else resolve(true);
         });
     });
 }
