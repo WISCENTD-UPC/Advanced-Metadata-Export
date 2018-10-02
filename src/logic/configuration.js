@@ -3,13 +3,12 @@ import * as actionTypes from '../actions/actionTypes';
 import * as settingsAction from "../actions/settingsAction";
 
 /**
- * For each metadataType (* represents all) we can define a defaultCondition
- * and a set of rules for the dependency type.
+ * For each metadataType (* represents all) we can define a set of rules for the dependency type.
  * @type {{metadataType: string, defaultCondition: boolean, rules: *[]}[]}
  */
 export let dependencyRules = [
     {
-        "metadataType": "*", // Any
+        "metadataType": "*",
         "rules": [
             {
                 "metadataType": "user",
@@ -23,7 +22,6 @@ export let dependencyRules = [
     },
     {
         "metadataType": "organisationUnit",
-        "defaultCondition": () => true,
         "rules": [
             {
                 "metadataType": "organisationUnit", // Children orgUnits
@@ -31,25 +29,36 @@ export let dependencyRules = [
                     === settingsAction.ORG_UNIT_CHILDREN_PARSE_OPTION
             }
         ]
+    }
+];
+
+export let dependencyBlacklist = [
+    {
+        "metadataType": "*",
+        "blacklist": []
     },
     {
-        "metadataType": "category",
-        "defaultCondition": () => false,
-        "rules": []
-    },
-    {
-        "metadataType": "categoryOptionCombo",
-        "defaultCondition": () => true,
-        "rules": [
-            {
-                "metadataType": "categoryCombo",
-                "condition": () => false
-            }
+        "metadataType": "categoryCombo",
+        "blacklist": [
+            "category"
         ]
     },
     {
         "metadataType": "categoryOption",
-        "defaultCondition": () => false,
-        "rules": []
+        "blacklist": [
+            "category", "categoryOptionCombo"
+        ]
+    },
+    {
+        "metadataType": "categoryOptionCombo",
+        "blacklist": [
+            "categoryCombo"
+        ]
+    },
+    {
+        "metadataType": "dataElement",
+        "blacklist": [
+            "dataSet"
+        ]
     }
 ];

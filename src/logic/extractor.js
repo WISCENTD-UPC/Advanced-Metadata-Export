@@ -209,7 +209,6 @@ function insertIfNotExists(database, element, type) {
 }
 
 function shouldDeepCopy(type, key) {
-    let defaultExitCondition = () => true;
     for (const ruleSet of configuration.dependencyRules) {
         if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
             for (const rule of ruleSet.rules) {
@@ -217,11 +216,16 @@ function shouldDeepCopy(type, key) {
                     return rule.condition(type);
                 }
             }
-            if (ruleSet.metadataType !== "*" && ruleSet.defaultCondition !== undefined)
-                defaultExitCondition = ruleSet.defaultCondition;
         }
     }
-    return defaultExitCondition();
+    for (const ruleSet of configuration.dependencyBlacklist) {
+        if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
+            if (ruleSet.blacklist.includes(key)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 function cleanJson(json) {
