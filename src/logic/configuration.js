@@ -4,7 +4,7 @@ import * as settingsAction from "../actions/settingsAction";
 
 /**
  * For each metadataType (* represents all) we can define a set of rules for the dependency type.
- * @type {{metadataType: string, defaultCondition: boolean, rules: *[]}[]}
+ * @type {{metadataType: string, rules: [{metadataType: string, condition: function}]}}
  */
 export let dependencyRules = [
     {
@@ -32,6 +32,10 @@ export let dependencyRules = [
     }
 ];
 
+/**
+ * For each metadataType (* represents all) we can define a set of blacklisted types.
+ * @type {{metadataType: string, blacklist: [string]}}
+ */
 export let dependencyBlacklist = [
     {
         "metadataType": "*",
