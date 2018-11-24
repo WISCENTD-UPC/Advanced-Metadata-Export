@@ -18,7 +18,8 @@ const grid = (state = gridInitialState, action) => {
                     _.difference(state.selection, action.partialStateValue));
                 extractor.initialFetchAndRetrieve({
                     d2: action.d2,
-                    database: action.database
+                    database: action.database,
+                    blacklist: action.blacklist
                 }, _.difference(action.partialStateValue, state.selection));
             }
             return {

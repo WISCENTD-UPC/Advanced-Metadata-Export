@@ -1,18 +1,20 @@
+import blacklist from './blacklistReducer';
 import d2 from './d2Reducer';
 import database from './databaseReducer';
-import loading from "./loadingReducer";
+import dialog from './dialogReducer';
 import grid from './gridReducer';
-import dialog from "./dialogReducer";
-import settings from "./settingsReducer";
+import loading from './loadingReducer';
+import settings from './settingsReducer';
 
 const index = (state = {}, action: Action) => {
     return {
+        blacklist: blacklist(state.blacklist, {...action, d2: state.d2}),
         d2: d2(state.d2, action),
         database: database(state.database, action),
-        loading: loading(state.loading, action),
         dialog: dialog(state.dialog, action),
-        settings: settings(state.settings, action),
-        grid: grid(state.grid, {...action, d2: state.d2, database: state.database, settings: state.settings})
+        grid: grid(state.grid, {...action, d2: state.d2, database: state.database, settings: state.settings, blacklist: state.blacklist}),
+        loading: loading(state.loading, action),
+        settings: settings(state.settings, action)
     };
 };
 

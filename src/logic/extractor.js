@@ -33,9 +33,10 @@ export function initialFetchAndRetrieve(builder, elements) {
                 fetchAndRetrieve({
                     d2: builder.d2,
                     database: builder.database,
+                    blacklist: builder.blacklist,
                     fetchedItems,
                     petitions,
-                    json
+                    json,
                 });
             });
         }
@@ -73,7 +74,8 @@ function fetchAndRetrieve(builder) {
                     recursiveParse({
                         d2: builder.d2,
                         element: element,
-                        type: builder.d2.models[type].name
+                        type: builder.d2.models[type].name,
+                        blacklist: builder.blacklist
                     }).then((references => {
                         parseElements({
                             d2: builder.d2,
@@ -110,7 +112,7 @@ function recursiveParse(builder) {
                 if (parent !== undefined && parent.key !== undefined) {
                     let key = parent.key === 'children' ? 'organisationUnit' : parent.key;
                     let model = builder.d2.models[key];
-                    if (model !== undefined && shouldDeepCopy(builder.type, model.name))
+                    if (model !== undefined && shouldDeepCopy(builder.blacklist, builder.type, model.name))
                         references.push(item);
                 }
             }
@@ -208,7 +210,7 @@ function insertIfNotExists(database, element, type) {
     });
 }
 
-function shouldDeepCopy(type, key) {
+function shouldDeepCopy(blacklist, type, key) {
     for (const ruleSet of configuration.dependencyRules) {
         if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
             for (const rule of ruleSet.rules) {
@@ -218,13 +220,14 @@ function shouldDeepCopy(type, key) {
             }
         }
     }
-    for (const ruleSet of configuration.dependencyBlacklist) {
-        if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
-            if (ruleSet.blacklist.includes(key)) {
+
+    _.forOwn(blacklist, (metadataType, items) => {
+        if (metadataType === "*" || metadataType === type) {
+            if (items.includes(key)) {
                 return false;
             }
         }
-    }
+    });
     return true;
 }
 

@@ -1,6 +1,7 @@
 import * as actionTypes from "../actions/actionTypes";
 
 const dialog = (state = {
+    adminDialogOpen: false,
     optionsDialogOpen: false,
     jsonDialogOpen: false,
     snackbarOpen: false,
@@ -9,6 +10,9 @@ const dialog = (state = {
 }, action) => {
     let newState = {...state};
     switch (action.type) {
+        case actionTypes.DIALOG_ADMIN_SHOW:
+            newState.adminDialogOpen = action.show;
+            return newState;
         case actionTypes.DIALOG_OPTIONS_SHOW:
             newState.optionsDialogOpen = action.show;
             return newState;

@@ -93,6 +93,7 @@ class MetadataGrid extends React.PureComponent {
         } = this.props;
 
         const openOptions = () => this.props.showOptionsDialog();
+        const openAdmin = () => this.props.showAdminDialog();
 
         return (
             <div className="main-container" style={{margin: "1em", marginTop: "3em"}}>
@@ -139,6 +140,9 @@ class MetadataGrid extends React.PureComponent {
                             <TemplatePlaceholder/>
                             <Button onClick={openOptions}>
                                 Options
+                            </Button>
+                            <Button onClick={openAdmin}>
+                                Admin
                             </Button>
                             <Spacer grow='1'/>
                         </Template>
@@ -220,6 +224,9 @@ const mapDispatchToProps = dispatch => ({
     },
     showOptionsDialog: () => {
         dispatch({type: actionTypes.DIALOG_OPTIONS_SHOW, show: true});
+    },
+    showAdminDialog: () => {
+        dispatch({type: actionTypes.DIALOG_ADMIN_SHOW, show: true});
     },
     showSnackbar: (message) => {
         dispatch({type: actionTypes.SNACKBAR_UPDATE, message});

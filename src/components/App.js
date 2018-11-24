@@ -21,6 +21,7 @@ import * as extractor from "../logic/extractor";
 import * as actionTypes from "../actions/actionTypes";
 import AlertSnackbar from "./AlertSnackbar";
 import OptionsDialog from "./OptionsDialog";
+import AdminDialog from "./AdminDialog";
 
 const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
 
@@ -34,11 +35,12 @@ class App extends React.Component {
     render() {
         const createPackage = () => extractor.handleCreatePackage({
             d2: this.props.d2,
-            database: this.props.database
+            database: this.props.database,
+            blacklist: this.props.blacklist
         }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
 
         const {
-            jsonDialogOpen, jsonDialogMessage, optionsDialogOpen, snackbarOpen, snackbarMessage
+            jsonDialogOpen, jsonDialogMessage, adminDialogOpen, optionsDialogOpen, snackbarOpen, snackbarMessage
         } = this.props.dialog;
 
         return (
@@ -57,6 +59,7 @@ class App extends React.Component {
                         </Button>
                     </Tooltip>
                     <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog}/>
+                    <AdminDialog open={adminDialogOpen} onClose={this.props.hideAdminDialog}/>
                     <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog}/>
                     <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar}/>
                 </div>
@@ -74,12 +77,16 @@ const mapStateToProps = state => ({
     database: state.database,
     loading: state.loading,
     grid: state.grid,
-    dialog: state.dialog
+    dialog: state.dialog,
+    blacklist: state.blacklist
 });
 
 const mapDispatchToProps = dispatch => ({
     hideJsonDialog: () => {
         dispatch({type: actionTypes.DIALOG_JSON_SHOW, show: false});
+    },
+    hideAdminDialog: () => {
+        dispatch({type: actionTypes.DIALOG_ADMIN_SHOW, show: false});
     },
     hideOptionsDialog: () => {
         dispatch({type: actionTypes.DIALOG_OPTIONS_SHOW, show: false});

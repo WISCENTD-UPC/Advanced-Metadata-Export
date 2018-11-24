@@ -34,35 +34,20 @@ export let dependencyRules = [
 
 /**
  * For each metadataType (* represents all) we can define a set of blacklisted types.
- * @type {{metadataType: string, blacklist: [string]}}
  */
-export let dependencyBlacklist = [
-    {
-        "metadataType": "*",
-        "blacklist": []
-    },
-    {
-        "metadataType": "categoryCombo",
-        "blacklist": [
-            "category"
-        ]
-    },
-    {
-        "metadataType": "categoryOption",
-        "blacklist": [
-            "category", "categoryOptionCombo"
-        ]
-    },
-    {
-        "metadataType": "categoryOptionCombo",
-        "blacklist": [
-            "categoryCombo"
-        ]
-    },
-    {
-        "metadataType": "dataElement",
-        "blacklist": [
-            "dataSet"
-        ]
-    }
-];
+export const namespaceName = 'export-metadata-blacklist';
+export let defaultBlacklist = {
+    "*": [],
+    "categoryCombo": [
+        "category"
+    ],
+    "categoryOption": [
+        "category", "categoryOptionCombo"
+    ],
+    "categoryOptionCombo": [
+        "categoryCombo"
+    ],
+    "dataElement": [
+        "dataSet"
+    ]
+};
