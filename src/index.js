@@ -63,18 +63,23 @@ function parseMetadataTypes(d2) {
         return d2.models[model].name
     }));
     let parsedElements = metadataTypes.length;
+    let insertMetadata = (model, result) => {
+        let metadata = result.toArray().map(e => {
+            return {
+                id: e.id,
+                name: e.displayName,
+                type: model
+            };
+        });
+        store.dispatch({type: actionTypes.GRID_ADD_METADATA, metadata});
+        if (result.pager.hasNextPage()) result.pager.getNextPage().then(result => insertMetadata(model, result));
+    };
     metadataTypes.forEach((model) => {
-        let metadata = [];
-        d2.models[model].list({paging: false, fields: ['id', 'name']}).then(result => {
-            result.toArray().forEach(object => {
-                metadata.push({
-                    id: object.id,
-                    name: object.name,
-                    type: model
-                })
-            });
-            store.dispatch({type: actionTypes.GRID_ADD_METADATA, metadata});
+        d2.models[model].list({paging: false, fields: ['id', 'displayName']}).then(result => {
+            insertMetadata(model, result);
             if (--parsedElements === 1) store.dispatch({type: actionTypes.LOADING, loading: false});
-        }).catch(() => parsedElements -= 1);
+        }).catch(() => {
+            if (--parsedElements === 1) store.dispatch({type: actionTypes.LOADING, loading: false});
+        });
     });
 }
