@@ -1,8 +1,8 @@
 import _ from 'lodash';
+import axios from "axios";
 import * as traverse from 'traverse';
 import * as FileSaver from 'file-saver';
 
-import {createAjaxQueue} from './ajaxMultiQueue';
 import * as configuration from "./configuration";
 
 import {store} from '../store';
@@ -10,7 +10,6 @@ import * as actionTypes from '../actions/actionTypes';
 import * as settingsAction from "../actions/settingsAction";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
-let ajaxQueue = createAjaxQueue(25);
 let totalRequests = 0, completedRequests = 0;
 
 /**
@@ -123,22 +122,22 @@ function recursiveParse(builder) {
 
 function parseElements(builder) {
     return new Promise(function (resolve, reject) {
+        let promises = [];
         let elements = _.uniq([...builder.elements].filter(x => !builder.petitions.has(x)));
-        if (elements.length > 0) {
-            let requestUrl = builder.d2.Api.getApi().baseUrl + '/metadata.json?fields=:all&filter=id:in:[' + elements.toString() + ']';
+        totalRequests += 1;
+        for (let i = 0; i < elements.length; i += 100) {
+            let requestUrl = builder.d2.Api.getApi().baseUrl +
+                '/metadata.json?fields=:all&filter=id:in:[' + elements.slice(i, i + 100).toString() + ']';
             if (DEBUG) console.log('parseElements: ' + requestUrl);
-            totalRequests += 1;
-            ajaxQueue.queue({
-                dataType: "json",
-                url: requestUrl,
-                success: function (json) {
-                    completedRequests += 1;
-                    resolve(json);
-                },
-                fail: reject
-            });
-            _.forEach(elements, (element) => builder.petitions.add(element));
+            promises.push(axios.get(requestUrl));
         }
+        _.forEach(elements, (element) => builder.petitions.add(element));
+        Promise.all(promises).then(results => {
+            let result = {};
+            completedRequests += 1;
+            _.merge(result, ...results.map(result => result.data));
+            resolve(result);
+        });
     });
 }
 
