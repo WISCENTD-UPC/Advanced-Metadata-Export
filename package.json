@@ -1,6 +1,6 @@
 {
     "name": "advanced-export",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "private": true,
     "dependencies": {
         "@devexpress/dx-react-core": "^1.4.0",
@@ -39,16 +39,16 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "prebuild": "rm -rf advanced-import-export.zip && rm -rf build/",
+        "prebuild": "rm -rf advanced-export.zip && rm -rf build/",
         "build": "react-scripts build",
-        "postbuild": "d2-manifest package.json build/manifest.webapp && cd build && zip -r ../advanced-import-export.zip . && rm asset-manifest.json && rm service-worker.js && cd ..",
+        "postbuild": "d2-manifest package.json build/manifest.webapp && cd build && zip -r ../advanced-export.zip . && rm asset-manifest.json && rm service-worker.js && cd ..",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject"
     },
     "manifest.webapp": {
         "name": "Advanced Export",
         "description": "Export App with recursive metadata fetching",
-        "version": "0.2.4",
+        "version": "0.2.5",
         "developer": {
             "name": "Alexis Rico",
             "url": "https://github.com/SferaDev"
