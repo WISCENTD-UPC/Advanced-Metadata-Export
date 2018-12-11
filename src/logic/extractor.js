@@ -2,12 +2,12 @@ import _ from 'lodash';
 import axios from "axios";
 import * as traverse from 'traverse';
 import * as FileSaver from 'file-saver';
-
-import * as configuration from "./configuration";
+import moment from "moment";
 
 import {store} from '../store';
 import * as actionTypes from '../actions/actionTypes';
 import * as settingsAction from "../actions/settingsAction";
+import * as configuration from "./configuration";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 let totalRequests = 0, completedRequests = 0;
@@ -145,10 +145,11 @@ export function handleCreatePackage(builder, elements) {
     store.dispatch({type: actionTypes.LOADING, loading: true});
     initialFetchAndRetrieve(builder, elements).then(() => {
         createPackage(builder, elements).then((result) => {
+            let fileName = 'extraction-' + moment().format('YYMMDDHHmm') + '.json';
             FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
                 type: 'application/json',
-                name: 'extraction.json'
-            }), 'extraction.json');
+                name: fileName
+            }), fileName);
             store.dispatch({type: actionTypes.LOADING, loading: false});
         });
     });
