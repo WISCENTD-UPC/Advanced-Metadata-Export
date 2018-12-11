@@ -1,6 +1,6 @@
 {
     "name": "advanced-export",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "private": true,
     "dependencies": {
         "@devexpress/dx-react-core": "^1.4.0",
@@ -22,6 +22,7 @@
         "lodash": "^4.17.10",
         "material-ui": "0.20.1",
         "material-ui-icons": "^1.0.0-beta.36",
+        "moment": "^2.22.2",
         "pouchdb": "^7.0.0",
         "prop-types": "latest",
         "react": "^16.4.1",
@@ -48,7 +49,7 @@
     "manifest.webapp": {
         "name": "Advanced Export",
         "description": "Export App with recursive metadata fetching",
-        "version": "0.2.5",
+        "version": "0.2.6",
         "developer": {
             "name": "Alexis Rico",
             "url": "https://github.com/SferaDev"
