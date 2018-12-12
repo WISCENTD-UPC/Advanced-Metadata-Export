@@ -130,7 +130,7 @@ class MetadataGrid extends React.PureComponent {
                         <TableHeaderRow/>
                         <TableGroupRow/>
                         <TableSelection
-                            selectByRowClick cellComponent={this.selectCell}
+                            showSelectAll selectByRowClick cellComponent={this.selectCell}
                         />
 
                         <Toolbar/>
