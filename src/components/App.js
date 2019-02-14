@@ -1,5 +1,4 @@
 import React from 'react';
-import _ from 'lodash';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {MuiThemeProvider} from 'material-ui';
@@ -29,8 +28,12 @@ class App extends React.Component {
     }
 
     render() {
-        const createPackage = () => Extractor.getInstance().handleCreatePackage(
-            _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
+        const createPackage = () => {
+            Extractor.getInstance().attachToExecutor().then(() => {
+                Extractor.getInstance().handleCreatePackage(this.props.grid.selection,
+                    this.props.grid.selectionAsIndeterminate);
+            });
+        };
 
         const {
             jsonDialogOpen, jsonDialogMessage, adminDialogOpen, optionsDialogOpen, snackbarOpen, snackbarMessage

@@ -9,6 +9,8 @@ import * as actionTypes from "../actions/actionTypes";
 import * as settingsAction from "../actions/settingsAction";
 import * as configuration from "./configuration";
 
+const timeout = ms => new Promise(res => setTimeout(res, ms));
+
 export let Extractor = (function(){
     let instance;
     return {
@@ -30,11 +32,16 @@ ExtractorClass.prototype.init = function (builder) {
     this.d2 = builder.d2;
     this.database = builder.database;
     this.debug = builder.debug || false;
+    this.concurrentExtractions = 0;
 };
 
 ExtractorClass.prototype.initialFetchAndRetrieve = async function (elements) {
+    while (this.concurrentExtractions > 5) await timeout(500);
+
+    this.concurrentExtractions += 1;
     let json = await this.parseElements(elements);
     await this.fetchAndRetrieve(json);
+    this.concurrentExtractions -= 1;
 
     store.dispatch({
         type: actionTypes.GRID_ADD_DEPENDENCIES,
@@ -93,12 +100,10 @@ ExtractorClass.prototype.parseElements = async function (elementsArray) {
     return _.merge({}, ...result.map(result => result.data));
 };
 
-ExtractorClass.prototype.handleCreatePackage = async function (elements) {
+ExtractorClass.prototype.handleCreatePackage = async function (elements, dependencies) {
     store.dispatch({type: actionTypes.LOADING, loading: true});
 
-    await this.initialFetchAndRetrieve(elements);
-
-    let result = await this.createPackage(elements);
+    let result = await this.createPackage(elements, dependencies);
 
     let fileName = 'extraction-' + moment().format('YYMMDDHHmm') + '.json';
     FileSaver.saveAs(new Blob([JSON.stringify(result, null, 4)], {
@@ -108,9 +113,9 @@ ExtractorClass.prototype.handleCreatePackage = async function (elements) {
     store.dispatch({type: actionTypes.LOADING, loading: false});
 };
 
-ExtractorClass.prototype.createPackage = async function (elements){
+ExtractorClass.prototype.createPackage = async function (elements, dependencies){
     if (this.debug) console.log('Generating final package');
-    let elementSet = new Set(elements);
+    let elementSet = new Set([...elements, ...dependencies]);
     let resultObject = {date: new Date().toISOString()};
 
     let result = await this.database.allDocs({
@@ -123,9 +128,6 @@ ExtractorClass.prototype.createPackage = async function (elements){
         if (elementSet.has(element._id)) {
             if (resultObject[elementType] === undefined) resultObject[elementType] = [];
             resultObject[elementType].push(cleanJson(element.json));
-        } else {
-            // TODO: This should never happen but we should add a fail-safe
-            console.error('[ERROR]: Consistency failure, element not found in database!');
         }
     }
 
@@ -155,6 +157,12 @@ ExtractorClass.prototype.shouldDeepCopy = function(type, key) {
         }
     });
     return true;
+};
+
+ExtractorClass.prototype.attachToExecutor = async function () {
+    store.dispatch({type: actionTypes.LOADING, loading: true});
+    while (this.concurrentExtractions > 0) await timeout(500);
+    store.dispatch({type: actionTypes.LOADING, loading: false});
 };
 
 ExtractorClass.prototype.updateBlacklist = function(blacklist) {
