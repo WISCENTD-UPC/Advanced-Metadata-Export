@@ -4,8 +4,8 @@ import _ from 'lodash';
 import {Provider} from "react-redux";
 import PouchDB from 'pouchdb';
 
-import * as D2Library from "d2/lib/d2";
-import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
+import * as D2Library from "d2";
+import LoadingMask from '@dhis2/d2-ui-core/loading-mask/LoadingMask.component';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import * as actionTypes from "./actions/actionTypes";
@@ -13,6 +13,7 @@ import App from './components/App.js';
 import theme from './components/Theme';
 import {store} from "./store";
 import './index.css';
+import {Extractor} from "./logic/extractor";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 
@@ -40,7 +41,13 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
         parseMetadataTypes(d2);
         let database = new PouchDB('exports');
         database.destroy().then(function () {
-            store.dispatch({type: 'SET_DATABASE', database: new PouchDB('exports')});
+            let newDatabase = new PouchDB('exports');
+            store.dispatch({type: 'SET_DATABASE', database: newDatabase});
+            Extractor.getInstance().init({
+                d2,
+                database: newDatabase,
+                debug: DEBUG
+            });
             ReactDOM.render(
                 <Provider store={store}>
                     <App/>
