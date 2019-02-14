@@ -11,10 +11,10 @@ import * as configuration from "./configuration";
 
 const timeout = ms => new Promise(res => setTimeout(res, ms));
 
-export let Extractor = (function(){
+export let Extractor = (function () {
     let instance;
     return {
-        getInstance: function(){
+        getInstance: function () {
             if (instance == null) {
                 instance = new ExtractorClass();
                 instance.constructor = null;
@@ -57,12 +57,16 @@ ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
                 // Insert on the database
                 await this.insertIfNotExists(element, type);
 
-                if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
+                // Block circular dependencies
+                if (!this.fetchedItems.has(element.id)) {
+                    if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
+                    this.fetchedItems.add(element.id);
 
-                // Traverse references and call recursion
-                let references = await this.recursiveParse(element, this.d2.models[type].name);
-                let newJson = await this.parseElements(references);
-                await this.fetchAndRetrieve(newJson);
+                    // Traverse references and call recursion
+                    let references = await this.recursiveParse(element, this.d2.models[type].name);
+                    let newJson = await this.parseElements(references);
+                    await this.fetchAndRetrieve(newJson);
+                }
             }
         }
     }
@@ -113,7 +117,7 @@ ExtractorClass.prototype.handleCreatePackage = async function (elements, depende
     store.dispatch({type: actionTypes.LOADING, loading: false});
 };
 
-ExtractorClass.prototype.createPackage = async function (elements, dependencies){
+ExtractorClass.prototype.createPackage = async function (elements, dependencies) {
     if (this.debug) console.log('Generating final package');
     let elementSet = new Set([...elements, ...dependencies]);
     let resultObject = {date: new Date().toISOString()};
@@ -142,7 +146,7 @@ ExtractorClass.prototype.insertIfNotExists = async function (element, type) {
     });
 };
 
-ExtractorClass.prototype.shouldDeepCopy = function(type, key) {
+ExtractorClass.prototype.shouldDeepCopy = function (type, key) {
     for (const ruleSet of configuration.dependencyRules) {
         if (ruleSet.metadataType === "*" || ruleSet.metadataType === type) {
             for (const rule of ruleSet.rules) {
@@ -165,7 +169,7 @@ ExtractorClass.prototype.attachToExecutor = async function () {
     store.dispatch({type: actionTypes.LOADING, loading: false});
 };
 
-ExtractorClass.prototype.updateBlacklist = function(blacklist) {
+ExtractorClass.prototype.updateBlacklist = function (blacklist) {
     this.blacklist = blacklist;
 };
 
