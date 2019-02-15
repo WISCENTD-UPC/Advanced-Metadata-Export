@@ -64,7 +64,7 @@ function parseMetadataTypes(d2) {
     }));
     let parsedElements = metadataTypes.length;
     let insertMetadata = (model, result) => {
-        let metadata = result.toArray().map(e => {
+        let metadata = result.toArray().filter(e => e.code !== 'default').map(e => {
             return {
                 id: e.id,
                 name: e.displayName,

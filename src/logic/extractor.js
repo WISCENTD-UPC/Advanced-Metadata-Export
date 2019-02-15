@@ -52,7 +52,7 @@ ExtractorClass.prototype.initialFetchAndRetrieve = async function (elements) {
 ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
     for (const type in json) {
         if (Array.isArray(json[type])) {
-            let elements = json[type].filter(e => e.id !== undefined);
+            let elements = json[type].filter(e => e.id !== undefined && e.code !== 'default');
             for (const element of elements) {
                 // Insert on the metadata map
                 this.metadataMap.set(element.id, {...element, type} );
