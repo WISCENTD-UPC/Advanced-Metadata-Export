@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Provider} from "react-redux";
-import PouchDB from 'pouchdb';
 
 import * as D2Library from "d2";
 import LoadingMask from '@dhis2/d2-ui-core/loading-mask/LoadingMask.component';
@@ -39,21 +38,15 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
         if (DEBUG) console.log({url: config.baseUrl, d2: d2});
         store.dispatch({type: 'SET_D2', d2});
         parseMetadataTypes(d2);
-        let database = new PouchDB('exports');
-        database.destroy().then(function () {
-            let newDatabase = new PouchDB('exports');
-            store.dispatch({type: 'SET_DATABASE', database: newDatabase});
-            Extractor.getInstance().init({
-                d2,
-                database: newDatabase,
-                debug: DEBUG
-            });
-            ReactDOM.render(
-                <Provider store={store}>
-                    <App/>
-                </Provider>, document.getElementById('root')
-            );
+        Extractor.getInstance().init({
+            d2,
+            debug: DEBUG
         });
+        ReactDOM.render(
+            <Provider store={store}>
+                <App/>
+            </Provider>, document.getElementById('root')
+        );
     });
 }).catch((error) => {
     console.error('D2 initialization error:', error);

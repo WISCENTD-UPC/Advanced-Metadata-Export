@@ -1,18 +1,16 @@
 import blacklist from './blacklistReducer';
 import d2 from './d2Reducer';
-import database from './databaseReducer';
 import dialog from './dialogReducer';
 import grid from './gridReducer';
 import loading from './loadingReducer';
 import settings from './settingsReducer';
 
-const index = (state = {}, action: Action) => {
+const index = (state = {}, action) => {
     return {
         blacklist: blacklist(state.blacklist, {...action, d2: state.d2}),
         d2: d2(state.d2, action),
-        database: database(state.database, action),
         dialog: dialog(state.dialog, action),
-        grid: grid(state.grid, {...action, d2: state.d2, database: state.database, settings: state.settings, blacklist: state.blacklist}),
+        grid: grid(state.grid, {...action, d2: state.d2, settings: state.settings, blacklist: state.blacklist}),
         loading: loading(state.loading, action),
         settings: settings(state.settings, action)
     };

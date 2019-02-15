@@ -70,7 +70,6 @@ App.childContextTypes = {
 
 const mapStateToProps = state => ({
     d2: state.d2,
-    database: state.database,
     loading: state.loading,
     grid: state.grid,
     dialog: state.dialog,

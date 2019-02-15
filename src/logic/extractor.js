@@ -30,7 +30,7 @@ let ExtractorClass = function () {
 
 ExtractorClass.prototype.init = function (builder) {
     this.d2 = builder.d2;
-    this.database = builder.database;
+    this.metadataMap = new Map();
     this.debug = builder.debug || false;
     this.concurrentExtractions = 0;
 };
@@ -54,8 +54,8 @@ ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
         if (Array.isArray(json[type])) {
             let elements = json[type].filter(e => e.id !== undefined);
             for (const element of elements) {
-                // Insert on the database
-                await this.insertIfNotExists(element, type);
+                // Insert on the metadata map
+                this.metadataMap.set(element.id, {...element, type} );
 
                 if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
 
@@ -118,28 +118,18 @@ ExtractorClass.prototype.createPackage = async function (elements, dependencies)
     let elementSet = new Set([...elements, ...dependencies]);
     let resultObject = {date: new Date().toISOString()};
 
-    let result = await this.database.allDocs({
-        include_docs: true,
-    });
-
-    for (let i = 0; i < result.rows.length; ++i) {
-        let element = result.rows[i].doc;
-        let elementType = this.d2.models[element.type].plural;
-        if (elementSet.has(element._id)) {
+    for (const id of elementSet) {
+        if (this.metadataMap.has(id)) {
+            let element = this.metadataMap.get(id);
+            let elementType = this.d2.models[element.type].plural;
             if (resultObject[elementType] === undefined) resultObject[elementType] = [];
-            resultObject[elementType].push(cleanJson(element.json));
+            resultObject[elementType].push(cleanJson(element));
+        } else if(this.debug) {
+            console.error('[ERROR]: Consistency failure, element ' + id + ' not found!')
         }
     }
 
     return resultObject;
-};
-
-ExtractorClass.prototype.insertIfNotExists = async function (element, type) {
-    await this.database.put({
-        _id: element.id,
-        type: type,
-        json: element,
-    });
 };
 
 ExtractorClass.prototype.shouldDeepCopy = function (type, key) {
@@ -167,6 +157,10 @@ ExtractorClass.prototype.attachToExecutor = async function () {
 
 ExtractorClass.prototype.updateBlacklist = function (blacklist) {
     this.blacklist = blacklist;
+};
+
+ExtractorClass.prototype.getElementById = async function (id) {
+    return this.metadataMap.get(id);
 };
 
 function cleanJson(json) {
