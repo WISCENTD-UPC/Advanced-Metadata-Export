@@ -57,16 +57,12 @@ ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
                 // Insert on the database
                 await this.insertIfNotExists(element, type);
 
-                // Block circular dependencies
-                if (!this.fetchedItems.has(element.id)) {
-                    if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
-                    this.fetchedItems.add(element.id);
+                if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
 
-                    // Traverse references and call recursion
-                    let references = await this.recursiveParse(element, this.d2.models[type].name);
-                    let newJson = await this.parseElements(references);
-                    await this.fetchAndRetrieve(newJson);
-                }
+                // Traverse references and call recursion
+                let references = await this.recursiveParse(element, this.d2.models[type].name);
+                let newJson = await this.parseElements(references);
+                await this.fetchAndRetrieve(newJson);
             }
         }
     }
