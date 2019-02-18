@@ -181,8 +181,7 @@ class AdminDialog extends React.PureComponent {
 
 const mapStateToProps = state => ({
     blacklist: state.blacklist,
-    d2: state.d2,
-    database: state.database
+    d2: state.d2
 });
 
 const mapDispatchToProps = dispatch => ({
