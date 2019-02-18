@@ -112,19 +112,19 @@ class MetadataGrid extends React.PureComponent {
                             grouping={grouping}
                             onGroupingChange={onGroupingChange}
                         />
-                        <SelectionState
-                            selection={selection}
-                            onSelectionChange={onSelectionChange}
-                        />
                         <SearchState
                             value={searchValue1}
                             onValueChange={onSearchValueChange1}
                         />
+                        <SelectionState
+                            selection={selection}
+                            onSelectionChange={onSelectionChange}
+                        />
 
                         <IntegratedSorting/>
                         <IntegratedGrouping/>
-                        <IntegratedSelection/>
                         <IntegratedFiltering/>
+                        <IntegratedSelection/>
 
                         <VirtualTable/>
 
