@@ -1,13 +1,10 @@
 import React from 'react';
-import _ from 'lodash';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {MuiThemeProvider} from 'material-ui';
 
-import HeaderBarComponent from 'd2-ui/lib/app-header/HeaderBar';
-import headerBarStore$ from 'd2-ui/lib/app-header/headerBar.store';
-import withStateFrom from 'd2-ui/lib/component-helpers/withStateFrom';
-import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
+import HeaderBar from '@dhis2/d2-ui-header-bar';
+import LoadingMask from '@dhis2/d2-ui-core/loading-mask/LoadingMask.component';
 
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import Button from '@material-ui/core/Button/Button';
@@ -17,13 +14,11 @@ import MetadataGrid from './MetadataGrid';
 import JsonDialog from './JsonDialog';
 import './App.css';
 import theme from './Theme';
-import * as extractor from "../logic/extractor";
 import * as actionTypes from "../actions/actionTypes";
 import AlertSnackbar from "./AlertSnackbar";
 import OptionsDialog from "./OptionsDialog";
 import AdminDialog from "./AdminDialog";
-
-const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
+import {Extractor} from "../logic/extractor";
 
 class App extends React.Component {
     getChildContext() {
@@ -33,11 +28,12 @@ class App extends React.Component {
     }
 
     render() {
-        const createPackage = () => extractor.handleCreatePackage({
-            d2: this.props.d2,
-            database: this.props.database,
-            blacklist: this.props.blacklist
-        }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
+        const createPackage = () => {
+            Extractor.getInstance().attachToExecutor().then(() => {
+                Extractor.getInstance().handleCreatePackage(this.props.grid.selection,
+                    this.props.grid.selectionAsIndeterminate);
+            });
+        };
 
         const {
             jsonDialogOpen, jsonDialogMessage, adminDialogOpen, optionsDialogOpen, snackbarOpen, snackbarMessage
@@ -74,7 +70,6 @@ App.childContextTypes = {
 
 const mapStateToProps = state => ({
     d2: state.d2,
-    database: state.database,
     loading: state.loading,
     grid: state.grid,
     dialog: state.dialog,

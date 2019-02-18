@@ -7,7 +7,7 @@ import {
     GRID_STATE_CHANGE
 } from '../actions/actionTypes';
 import {gridInitialState} from '../actions/gridAction';
-import * as extractor from "../logic/extractor";
+import {Extractor} from "../logic/extractor";
 
 const grid = (state = gridInitialState, action) => {
     let newState = {...state};
@@ -16,11 +16,8 @@ const grid = (state = gridInitialState, action) => {
             if (action.partialStateName === 'selection') {
                 newState.selectionAsIndeterminate = _.difference(state.selectionAsIndeterminate,
                     _.difference(state.selection, action.partialStateValue));
-                extractor.initialFetchAndRetrieve({
-                    d2: action.d2,
-                    database: action.database,
-                    blacklist: action.blacklist
-                }, _.difference(action.partialStateValue, state.selection));
+                Extractor.getInstance().initialFetchAndRetrieve(
+                    _.difference(action.partialStateValue, state.selection));
             }
             return {
                 ...newState,
