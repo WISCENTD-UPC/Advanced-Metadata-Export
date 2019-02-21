@@ -2,14 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Provider} from "react-redux";
-
 import * as D2Library from "d2";
-import LoadingMask from '@dhis2/d2-ui-core/loading-mask/LoadingMask.component';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import * as actionTypes from "./actions/actionTypes";
 import App from './components/App.js';
-import theme from './components/Theme';
 import {store} from "./store";
 import './index.css';
 import {Extractor} from "./logic/extractor";
@@ -44,7 +40,7 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
         });
         ReactDOM.render(
             <Provider store={store}>
-                <App/>
+                <App d2={d2} />
             </Provider>, document.getElementById('root')
         );
     });
@@ -52,9 +48,6 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
     console.error('D2 initialization error:', error);
     ReactDOM.render((<div>Failed to connect with D2</div>), document.getElementById('root'));
 });
-
-ReactDOM.render(<MuiThemeProvider muiTheme={theme}><LoadingMask
-    large={true}/></MuiThemeProvider>, document.getElementById('root'));
 
 function parseMetadataTypes(d2) {
     let metadataTypes = _.uniq(Object.keys(d2.models).filter(model => {
