@@ -4,10 +4,10 @@ This advanced export app allows the user to create packages of metadata with all
 
 ## Prepare the environment
 
-All the required dependencies to develop the app can be achieved through npm.
+All the required dependencies to develop the app can be achieved through yarn.
 
 ```
-npm install
+yarn install
 ```
 
 ## Start a development server
@@ -28,7 +28,7 @@ https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
 - Execute development server
 
 ```
-npm run start
+yarn start
 ```
 
 ## Build a release package
@@ -36,5 +36,5 @@ npm run start
 - Create a packaged zip
 
 ```
-npm run build
+yarn run build
 ```
