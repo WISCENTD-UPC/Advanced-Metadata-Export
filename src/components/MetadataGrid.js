@@ -29,6 +29,7 @@ import {TableSelectCell} from './TableSelectCell';
 import {TableDetailCell} from './TableDetailCell';
 import * as actionTypes from '../actions/actionTypes';
 import Spacer from './Spacer';
+import {Extractor} from "../logic/extractor";
 
 class MetadataGrid extends React.PureComponent {
     getRowId = row => row.id;
@@ -45,10 +46,9 @@ class MetadataGrid extends React.PureComponent {
         const onDelete = (id) => this.props.grid.selectionAsIndeterminate.clear();
 
         const onViewDetail = () => {
-            this.props.database.get(this.getRowId(row)).then((doc) => {
-                this.props.showJsonDialog(doc.json);
-            }).catch(() => {
-                this.props.showSnackbar('Item not fetched yet');
+            Extractor.getInstance().getElementById(this.getRowId(row)).then(element => {
+                if (element !== undefined) this.props.showJsonDialog(element);
+                else this.props.showSnackbar('Item not fetched yet');
             });
         };
 
@@ -69,8 +69,9 @@ class MetadataGrid extends React.PureComponent {
         };
 
         const onViewDetail = () => {
-            this.props.database.get(this.getRowId(row)).then((doc) => {
-                this.props.showJsonDialog(doc.json);
+            Extractor.getInstance().getElementById(this.getRowId(row)).then(element => {
+                if (element !== undefined) this.props.showJsonDialog(element);
+                else this.props.showSnackbar('Item not fetched yet');
             });
         };
 
@@ -111,19 +112,19 @@ class MetadataGrid extends React.PureComponent {
                             grouping={grouping}
                             onGroupingChange={onGroupingChange}
                         />
-                        <SelectionState
-                            selection={selection}
-                            onSelectionChange={onSelectionChange}
-                        />
                         <SearchState
                             value={searchValue1}
                             onValueChange={onSearchValueChange1}
                         />
+                        <SelectionState
+                            selection={selection}
+                            onSelectionChange={onSelectionChange}
+                        />
 
                         <IntegratedSorting/>
                         <IntegratedGrouping/>
-                        <IntegratedSelection/>
                         <IntegratedFiltering/>
+                        <IntegratedSelection/>
 
                         <VirtualTable/>
 
@@ -203,8 +204,7 @@ class MetadataGrid extends React.PureComponent {
 
 const mapStateToProps = state => ({
     grid: state.grid,
-    d2: state.d2,
-    database: state.database
+    d2: state.d2
 });
 
 const mapDispatchToProps = dispatch => ({

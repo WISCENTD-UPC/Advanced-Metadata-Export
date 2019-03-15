@@ -2,17 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Provider} from "react-redux";
-import PouchDB from 'pouchdb';
-
-import * as D2Library from "d2/lib/d2";
-import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import * as D2Library from "d2";
 
 import * as actionTypes from "./actions/actionTypes";
 import App from './components/App.js';
-import theme from './components/Theme';
 import {store} from "./store";
 import './index.css';
+import {Extractor} from "./logic/extractor";
 
 const DEBUG = process.env.REACT_APP_DEBUG;
 
@@ -38,23 +34,20 @@ D2Library.getManifest('manifest.webapp').then((manifest) => {
         if (DEBUG) console.log({url: config.baseUrl, d2: d2});
         store.dispatch({type: 'SET_D2', d2});
         parseMetadataTypes(d2);
-        let database = new PouchDB('exports');
-        database.destroy().then(function () {
-            store.dispatch({type: 'SET_DATABASE', database: new PouchDB('exports')});
-            ReactDOM.render(
-                <Provider store={store}>
-                    <App/>
-                </Provider>, document.getElementById('root')
-            );
+        Extractor.getInstance().init({
+            d2,
+            debug: DEBUG
         });
+        ReactDOM.render(
+            <Provider store={store}>
+                <App d2={d2} />
+            </Provider>, document.getElementById('root')
+        );
     });
 }).catch((error) => {
     console.error('D2 initialization error:', error);
     ReactDOM.render((<div>Failed to connect with D2</div>), document.getElementById('root'));
 });
-
-ReactDOM.render(<MuiThemeProvider muiTheme={theme}><LoadingMask
-    large={true}/></MuiThemeProvider>, document.getElementById('root'));
 
 function parseMetadataTypes(d2) {
     let metadataTypes = _.uniq(Object.keys(d2.models).filter(model => {
@@ -64,7 +57,7 @@ function parseMetadataTypes(d2) {
     }));
     let parsedElements = metadataTypes.length;
     let insertMetadata = (model, result) => {
-        let metadata = result.toArray().map(e => {
+        let metadata = result.toArray().filter(e => e.code !== 'default').map(e => {
             return {
                 id: e.id,
                 name: e.displayName,

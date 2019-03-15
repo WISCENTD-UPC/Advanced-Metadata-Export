@@ -1,29 +1,26 @@
 import React from 'react';
-import _ from 'lodash';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {MuiThemeProvider} from 'material-ui';
 
-import HeaderBarComponent from 'd2-ui/lib/app-header/HeaderBar';
-import headerBarStore$ from 'd2-ui/lib/app-header/headerBar.store';
-import withStateFrom from 'd2-ui/lib/component-helpers/withStateFrom';
-import LoadingMask from 'd2-ui/lib/loading-mask/LoadingMask.component';
+import HeaderBar from "@dhis2/d2-ui-header-bar";
+import LoadingMask from '@dhis2/d2-ui-core/loading-mask/LoadingMask.component';
 
+import OldMuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import {MuiThemeProvider} from "@material-ui/core/styles";
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import Button from '@material-ui/core/Button/Button';
+import Fab from "@material-ui/core/Fab";
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 
 import MetadataGrid from './MetadataGrid';
 import JsonDialog from './JsonDialog';
 import './App.css';
-import theme from './Theme';
-import * as extractor from "../logic/extractor";
+import {muiTheme} from "../themes/dhis2.theme";
+import muiThemeLegacy from "../themes/dhis2-legacy.theme";
 import * as actionTypes from "../actions/actionTypes";
 import AlertSnackbar from "./AlertSnackbar";
 import OptionsDialog from "./OptionsDialog";
 import AdminDialog from "./AdminDialog";
-
-const HeaderBar = withStateFrom(headerBarStore$, HeaderBarComponent);
+import {Extractor} from "../logic/extractor";
 
 class App extends React.Component {
     getChildContext() {
@@ -33,36 +30,39 @@ class App extends React.Component {
     }
 
     render() {
-        const createPackage = () => extractor.handleCreatePackage({
-            d2: this.props.d2,
-            database: this.props.database,
-            blacklist: this.props.blacklist
-        }, _.concat(this.props.grid.selection, ...this.props.grid.selectionAsIndeterminate));
+        const createPackage = () => {
+            Extractor.getInstance().attachToExecutor().then(() => {
+                Extractor.getInstance().handleCreatePackage(this.props.grid.selection,
+                    this.props.grid.selectionAsIndeterminate);
+            });
+        };
 
         const {
             jsonDialogOpen, jsonDialogMessage, adminDialogOpen, optionsDialogOpen, snackbarOpen, snackbarMessage
         } = this.props.dialog;
 
         return (
-            <MuiThemeProvider muiTheme={theme}>
-                <div>
-                    <div id="loading" hidden={!this.props.loading}>
-                        <LoadingMask large={true}/>
-                    </div>
+            <MuiThemeProvider theme={muiTheme}>
+                <OldMuiThemeProvider muiTheme={muiThemeLegacy}>
                     <div>
-                        <HeaderBar d2={this.props.d2}/>
-                        <MetadataGrid/>
+                        <div id="loading" hidden={!this.props.loading}>
+                            <LoadingMask large={true}/>
+                        </div>
+                        <div>
+                            <HeaderBar d2={this.props.d2} />
+                            <MetadataGrid/>
+                        </div>
+                        <Tooltip title="Export" placement="top">
+                            <Fab id="fab" onClick={createPackage}>
+                                <ArrowDownwardIcon style={{color: "white"}}/>
+                            </Fab>
+                        </Tooltip>
+                        <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog}/>
+                        <AdminDialog open={adminDialogOpen} onClose={this.props.hideAdminDialog}/>
+                        <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog}/>
+                        <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar}/>
                     </div>
-                    <Tooltip title="Export" placement="top">
-                        <Button id="fab" variant="fab" onClick={createPackage}>
-                            <ArrowDownwardIcon style={{color: "white"}}/>
-                        </Button>
-                    </Tooltip>
-                    <JsonDialog open={jsonDialogOpen} json={jsonDialogMessage} onClose={this.props.hideJsonDialog}/>
-                    <AdminDialog open={adminDialogOpen} onClose={this.props.hideAdminDialog}/>
-                    <OptionsDialog open={optionsDialogOpen} onClose={this.props.hideOptionsDialog}/>
-                    <AlertSnackbar open={snackbarOpen} message={snackbarMessage} onClose={this.props.hideSnackbar}/>
-                </div>
+                </OldMuiThemeProvider>
             </MuiThemeProvider>
         );
     }
@@ -73,8 +73,6 @@ App.childContextTypes = {
 };
 
 const mapStateToProps = state => ({
-    d2: state.d2,
-    database: state.database,
     loading: state.loading,
     grid: state.grid,
     dialog: state.dialog,
