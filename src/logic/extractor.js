@@ -50,17 +50,17 @@ ExtractorClass.prototype.initialFetchAndRetrieve = async function (elements) {
 };
 
 ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
-    for (const type in json) {
-        if (Array.isArray(json[type])) {
-            let elements = json[type].filter(e => e.id !== undefined && e.code !== 'default');
+    for (const metadataType in json) {
+        if (Array.isArray(json[metadataType])) {
+            let elements = json[metadataType].filter(e => e.id !== undefined && e.code !== 'default');
             for (const element of elements) {
                 // Insert on the metadata map
-                this.metadataMap.set(element.id, {...element, type} );
+                this.metadataMap.set(element.id, {metadataType, ...element} );
 
                 if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
 
                 // Traverse references and call recursion
-                let references = await this.recursiveParse(element, this.d2.models[type].name);
+                let references = await this.recursiveParse(element, this.d2.models[metadataType].name);
                 let newJson = await this.parseElements(references);
                 await this.fetchAndRetrieve(newJson);
             }
@@ -121,7 +121,7 @@ ExtractorClass.prototype.createPackage = async function (elements, dependencies)
     for (const id of elementSet) {
         if (this.metadataMap.has(id)) {
             let element = this.metadataMap.get(id);
-            let elementType = this.d2.models[element.type].plural;
+            let elementType = this.d2.models[element.metadataType].plural;
             if (resultObject[elementType] === undefined) resultObject[elementType] = [];
             resultObject[elementType].push(cleanJson(element));
         } else if(this.debug) {
@@ -168,6 +168,7 @@ function cleanJson(json) {
     if (store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP] === settingsAction.USER_CLEAN_UP_REMOVE_OPTION) {
         traverse(result).forEach(function (item) {
             if (this.key === 'user') this.update({});
+            if (this.key === 'users') this.update([]);
             if (this.key === 'userGroupAccesses') this.update([]);
             if (this.key === 'userAccesses') this.update([]);
             if (this.key === 'lastUpdatedBy') this.update({});
