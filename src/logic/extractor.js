@@ -57,7 +57,7 @@ ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
     const metadataTypes = _.keys(json).filter(type => _.isArray(json[type]));
     for (const metadataType of metadataTypes) {
         let references = [];
-        let elements = json[metadataType].filter(e => e.id !== undefined && e.code !== 'default');
+        let elements = json[metadataType].filter(e => e.id !== undefined);
         if (this.debug) console.log('fetchAndRetrieve: Parsing ' + elements.map(e => e.id));
 
         for (const element of elements) {
@@ -79,7 +79,7 @@ ExtractorClass.prototype.recursiveParse = async function (element, type) {
     let context = this;
     let references = [];
     traverse(element).forEach(function (item) {
-        if (this.isLeaf && this.key === 'id' && item !== '') {
+        if (this.isLeaf && this.key === 'id' && isValidUid(item)) {
             let parent = this.parent;
             while (parent.level > 1 && context.d2.models[parent.key] === undefined) parent = parent.parent;
             if (parent.key !== undefined) {
@@ -188,4 +188,9 @@ function cleanJson(json) {
         });
     }
     return result;
+}
+
+function isValidUid(code) {
+    const CODE_PATTERN = /^[a-zA-Z][a-zA-Z0-9]{10}$/;
+    return code !== null && CODE_PATTERN.test(code);
 }
