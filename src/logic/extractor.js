@@ -99,7 +99,7 @@ ExtractorClass.prototype.parseElements = async function (elementsArray) {
     let promises = [];
     for (let i = 0; i < elements.length; i += 100) {
         let requestUrl = this.d2.Api.getApi().baseUrl +
-            '/metadata.json?fields=:all&filter=id:in:[' + elements.slice(i, i + 100).toString() + ']';
+            '/metadata.json?fields=:all&defaults=EXCLUDE&filter=id:in:[' + elements.slice(i, i + 100).toString() + ']';
         if (this.debug) console.log('parseElements: ' + requestUrl);
         promises.push(axios.get(requestUrl));
     }
