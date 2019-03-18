@@ -13,6 +13,7 @@ import * as configuration from "./configuration";
 axiosRetry(axios, { retries: 10 });
 
 const timeout = ms => new Promise(res => setTimeout(res, ms));
+const mergeCustomizer = (obj, src) => _.isArray(obj) ? obj.concat(src) : src;
 
 export let Extractor = (function () {
     let instance;
@@ -103,7 +104,8 @@ ExtractorClass.prototype.parseElements = async function (elementsArray) {
         promises.push(axios.get(requestUrl));
     }
     let result = await Promise.all(promises);
-    return _.merge({}, ...result.map(result => result.data));
+    const data = result.map(result => result.data);
+    return _.mergeWith({}, ...data, mergeCustomizer);
 };
 
 ExtractorClass.prototype.handleCreatePackage = async function (elements, dependencies) {
