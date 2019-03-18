@@ -53,21 +53,24 @@ ExtractorClass.prototype.initialFetchAndRetrieve = async function (elements) {
 };
 
 ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
-    for (const metadataType in json) {
-        if (Array.isArray(json[metadataType])) {
-            let elements = json[metadataType].filter(e => e.id !== undefined && e.code !== 'default');
-            for (const element of elements) {
-                // Insert on the metadata map
-                this.metadataMap.set(element.id, {metadataType, ...element} );
+    const metadataTypes = _.keys(json).filter(type => _.isArray(json[type]));
+    for (const metadataType of metadataTypes) {
+        let references = [];
+        let elements = json[metadataType].filter(e => e.id !== undefined && e.code !== 'default');
+        if (this.debug) console.log('fetchAndRetrieve: Parsing ' + elements.map(e => e.id));
 
-                if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
+        for (const element of elements) {
+            // Insert on the metadata map
+            this.metadataMap.set(element.id, {metadataType, ...element} );
 
-                // Traverse references and call recursion
-                let references = await this.recursiveParse(element, this.d2.models[metadataType].name);
-                let newJson = await this.parseElements(references);
-                await this.fetchAndRetrieve(newJson);
-            }
+            // Traverse and store references
+            const innerReferences = await this.recursiveParse(element, this.d2.models[metadataType].name);
+            references.push(...innerReferences);
         }
+
+        // Call recursion
+        const newJson = await this.parseElements(references);
+        await this.fetchAndRetrieve(newJson);
     }
 };
 
