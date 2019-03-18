@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import axios from "axios";
+import axiosRetry from 'axios-retry';
 import * as traverse from "traverse";
 import * as FileSaver from "file-saver";
 import moment from "moment";
@@ -8,6 +9,8 @@ import {store} from "../store";
 import * as actionTypes from "../actions/actionTypes";
 import * as settingsAction from "../actions/settingsAction";
 import * as configuration from "./configuration";
+
+axiosRetry(axios, { retries: 10 });
 
 const timeout = ms => new Promise(res => setTimeout(res, ms));
 
