@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import axios from "axios";
+import axiosRetry from 'axios-retry';
 import * as traverse from "traverse";
 import * as FileSaver from "file-saver";
 import moment from "moment";
@@ -9,7 +10,10 @@ import * as actionTypes from "../actions/actionTypes";
 import * as settingsAction from "../actions/settingsAction";
 import * as configuration from "./configuration";
 
+axiosRetry(axios, { retries: 10 });
+
 const timeout = ms => new Promise(res => setTimeout(res, ms));
+const mergeCustomizer = (obj, src) => _.isArray(obj) ? obj.concat(src) : src;
 
 export let Extractor = (function () {
     let instance;
@@ -50,21 +54,24 @@ ExtractorClass.prototype.initialFetchAndRetrieve = async function (elements) {
 };
 
 ExtractorClass.prototype.fetchAndRetrieve = async function (json) {
-    for (const type in json) {
-        if (Array.isArray(json[type])) {
-            let elements = json[type].filter(e => e.id !== undefined && e.code !== 'default');
-            for (const element of elements) {
-                // Insert on the metadata map
-                this.metadataMap.set(element.id, {...element, type} );
+    const metadataTypes = _.keys(json).filter(type => _.isArray(json[type]));
+    for (const metadataType of metadataTypes) {
+        let references = [];
+        let elements = json[metadataType].filter(e => e.id !== undefined);
+        if (this.debug) console.log('fetchAndRetrieve: Parsing ' + elements.map(e => e.id));
 
-                if (this.debug) console.log('fetchAndRetrieve: Parsing ' + element.id);
+        for (const element of elements) {
+            // Insert on the metadata map
+            this.metadataMap.set(element.id, {metadataType, ...element} );
 
-                // Traverse references and call recursion
-                let references = await this.recursiveParse(element, this.d2.models[type].name);
-                let newJson = await this.parseElements(references);
-                await this.fetchAndRetrieve(newJson);
-            }
+            // Traverse and store references
+            const innerReferences = await this.recursiveParse(element, this.d2.models[metadataType].name);
+            references.push(...innerReferences);
         }
+
+        // Call recursion
+        const newJson = await this.parseElements(references);
+        await this.fetchAndRetrieve(newJson);
     }
 };
 
@@ -72,7 +79,7 @@ ExtractorClass.prototype.recursiveParse = async function (element, type) {
     let context = this;
     let references = [];
     traverse(element).forEach(function (item) {
-        if (this.isLeaf && this.key === 'id' && item !== '') {
+        if (this.isLeaf && this.key === 'id' && isValidUid(item)) {
             let parent = this.parent;
             while (parent.level > 1 && context.d2.models[parent.key] === undefined) parent = parent.parent;
             if (parent.key !== undefined) {
@@ -92,12 +99,13 @@ ExtractorClass.prototype.parseElements = async function (elementsArray) {
     let promises = [];
     for (let i = 0; i < elements.length; i += 100) {
         let requestUrl = this.d2.Api.getApi().baseUrl +
-            '/metadata.json?fields=:all&filter=id:in:[' + elements.slice(i, i + 100).toString() + ']';
+            '/metadata.json?fields=:all&defaults=EXCLUDE&filter=id:in:[' + elements.slice(i, i + 100).toString() + ']';
         if (this.debug) console.log('parseElements: ' + requestUrl);
         promises.push(axios.get(requestUrl));
     }
     let result = await Promise.all(promises);
-    return _.merge({}, ...result.map(result => result.data));
+    const data = result.map(result => result.data);
+    return _.mergeWith({}, ...data, mergeCustomizer);
 };
 
 ExtractorClass.prototype.handleCreatePackage = async function (elements, dependencies) {
@@ -121,7 +129,7 @@ ExtractorClass.prototype.createPackage = async function (elements, dependencies)
     for (const id of elementSet) {
         if (this.metadataMap.has(id)) {
             let element = this.metadataMap.get(id);
-            let elementType = this.d2.models[element.type].plural;
+            let elementType = this.d2.models[element.metadataType].plural;
             if (resultObject[elementType] === undefined) resultObject[elementType] = [];
             resultObject[elementType].push(cleanJson(element));
         } else if(this.debug) {
@@ -168,6 +176,7 @@ function cleanJson(json) {
     if (store.getState().settings[actionTypes.SETTINGS_USER_CLEAN_UP] === settingsAction.USER_CLEAN_UP_REMOVE_OPTION) {
         traverse(result).forEach(function (item) {
             if (this.key === 'user') this.update({});
+            if (this.key === 'users') this.update([]);
             if (this.key === 'userGroupAccesses') this.update([]);
             if (this.key === 'userAccesses') this.update([]);
             if (this.key === 'lastUpdatedBy') this.update({});
@@ -179,4 +188,9 @@ function cleanJson(json) {
         });
     }
     return result;
+}
+
+function isValidUid(code) {
+    const CODE_PATTERN = /^[a-zA-Z][a-zA-Z0-9]{10}$/;
+    return code !== null && CODE_PATTERN.test(code);
 }

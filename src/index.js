@@ -68,7 +68,7 @@ function parseMetadataTypes(d2) {
         if (result.pager.hasNextPage()) result.pager.getNextPage().then(result => insertMetadata(model, result));
     };
     metadataTypes.forEach((model) => {
-        d2.models[model].list({paging: false, fields: ['id', 'displayName']}).then(result => {
+        d2.models[model].list({paging: false, fields: ['id', 'displayName', 'code']}).then(result => {
             insertMetadata(model, result);
             if (--parsedElements === 1) store.dispatch({type: actionTypes.LOADING, loading: false});
         }).catch(() => {
