@@ -23,7 +23,9 @@ class AdminDialog extends React.PureComponent {
         this.state = {
             rows: [],
             selection: [],
-            metadataType: undefined
+            metadataType: {
+                rows: []
+            }
         };
 
         getBlacklistFromServer(store.dispatch, this.props.d2);
@@ -32,26 +34,45 @@ class AdminDialog extends React.PureComponent {
         this.onSelectionChange = this.onSelectionChange.bind(this);
     }
 
-    loadSelection = () => {
+    metadataTypes = _(this.props.d2.models)
+        .keys()
+        .filter(model => {
+            return this.props.d2.models[model].isMetaData;
+        })
+        .map(model => {
+            return this.props.d2.models[model].name;
+        })
+        .uniq()
+        .sort()
+        .map(elementName => {
+            const {models} = this.props.d2;
+            let rows = _(models[elementName].modelValidations)
+            .keys()
+            .filter(validation => {
+                let validationRule = models[elementName].modelValidations[validation];
+                let isReference = (validationRule.type === 'COLLECTION' && validationRule.referenceType !== undefined) ||
+                    validationRule.type === 'REFERENCE';
+                return isReference && models[validation] && validation !== "user";
+            })
+            .map(name => {
+                let model = models[name];
+                return { name: model.name };
+            })
+            .uniqBy('name')
+            .value();
 
-    };
+            let element = models[elementName];
+            return {value: element.name, label: element.displayName, rows};
+        })
+        .filter(element => element.rows.length > 0);
 
     handleClose = () => {
         this.props.onClose();
     };
 
     onMetadataTypeChange = (metadataType) => {
-        let rows = Object.keys(this.props.d2.models[metadataType.value].modelValidations).filter(validation => {
-            let validationRule = this.props.d2.models[metadataType.value].modelValidations[validation];
-            let isReference = (validationRule.type === 'COLLECTION' && validationRule.referenceType !== undefined) ||
-                validationRule.type === 'REFERENCE';
-            return isReference && this.props.d2.models[validation] !== undefined;
-        }).map(name => {
-            return {name: name};
-        });
         this.setState({
             metadataType: metadataType,
-            rows: rows,
             selection: this.props.blacklist[metadataType.value]
         });
     };
@@ -65,79 +86,75 @@ class AdminDialog extends React.PureComponent {
         store.dispatch({type: actionTypes.UPDATE_USER_BLACKLIST, blacklist: newSelection});
     };
 
-    render() {
-        let metadataTypes = _.uniq(Object.keys(this.props.d2.models).filter(model => {
-            return this.props.d2.models[model].isMetaData;
-        }).map(model => {
-            return this.props.d2.models[model].name;
-        })).sort().map(elementName => {
-            let element = this.props.d2.models[elementName];
-            return {value: element.name, label: element.displayName};
+    saveBlacklist = () => {
+        let blackListName = window.prompt('Insert blacklist name to store');
+        this.props.d2.dataStore.has(namespaceName).then(exists => {
+            if (!exists) {
+                this.props.d2.dataStore.create(namespaceName).then(namespace => {
+                    namespace.set(blackListName, this.props.blacklist);
+                });
+            } else {
+                this.props.d2.dataStore.get(namespaceName).then(namespace => {
+                    if (namespace.keys.includes(blackListName)) {
+                        let overwrite = window.confirm('Blacklist with name ' + blackListName + ' already exists. Overwrite?');
+                        if (overwrite) namespace.set(blackListName, this.props.blacklist);
+                    } else namespace.set(blackListName, this.props.blacklist);
+                });
+            }
         });
+    };
 
+    loadBlacklist = () => {
+        let blackListName = window.prompt('Insert blacklist name to load');
+        this.props.d2.dataStore.has(namespaceName).then(exists => {
+            if (!exists) {
+                this.props.d2.dataStore.create(namespaceName).then(namespace => {
+                    window.alert('Blacklist ' + blackListName + ' does not exist');
+                });
+            } else {
+                this.props.d2.dataStore.get(namespaceName).then(namespace => {
+                    if (namespace.keys.includes(blackListName)) {
+                        namespace.get(blackListName).then(newBlacklist => {
+                            store.dispatch({type: actionTypes.UPDATE_USER_BLACKLIST, blacklist: newBlacklist});
+                            if (this.state.metadataType !== undefined && newBlacklist[this.state.metadataType.value] !== undefined)
+                                this.setState({selection: newBlacklist[this.state.metadataType.value]});
+                            else this.setState({selection: []});
+                        });
+                    } else window.alert('Blacklist ' + blackListName + ' does not exist')
+                });
+            }
+        });
+    };
+
+    loadDefaultBlacklist = () => {
+        const {metadataType} = this.state;
+        let selection = [];
+        if (metadataType !== undefined && defaultBlacklist[metadataType.value] !== undefined) {
+            selection = defaultBlacklist[metadataType.value];
+        }
+        this.setState({selection});
+        store.dispatch({type: actionTypes.UPDATE_USER_BLACKLIST, blacklist: defaultBlacklist});
+    };
+
+    render() {
+        const {selection, metadataType} = this.state;
+        const {...other} = this.props;
         const columns = [{
             name: 'name',
             title: 'Name'
         }];
 
-        const {...other} = this.props;
-
-        let saveBlacklist = () => {
-            let blackListName = window.prompt('Insert blacklist name to store');
-            this.props.d2.dataStore.has(namespaceName).then(exists => {
-                if (!exists) {
-                    this.props.d2.dataStore.create(namespaceName).then(namespace => {
-                        namespace.set(blackListName, this.props.blacklist);
-                    });
-                } else {
-                    this.props.d2.dataStore.get(namespaceName).then(namespace => {
-                        if (namespace.keys.includes(blackListName)) {
-                            let overwrite = window.confirm('Blacklist with name ' + blackListName + ' already exists. Overwrite?');
-                            if (overwrite) namespace.set(blackListName, this.props.blacklist);
-                        } else namespace.set(blackListName, this.props.blacklist);
-                    });
-                }
-            });
-        };
-
-        let loadBlacklist = () => {
-            let blackListName = window.prompt('Insert blacklist name to load');
-            this.props.d2.dataStore.has(namespaceName).then(exists => {
-                if (!exists) {
-                    this.props.d2.dataStore.create(namespaceName).then(namespace => {
-                        window.alert('Blacklist ' + blackListName + ' does not exist');
-                    });
-                } else {
-                    this.props.d2.dataStore.get(namespaceName).then(namespace => {
-                        if (namespace.keys.includes(blackListName)) {
-                            namespace.get(blackListName).then(newBlacklist => {
-                                store.dispatch({type: actionTypes.UPDATE_USER_BLACKLIST, blacklist: newBlacklist});
-                                if (this.state.metadataType !== undefined && newBlacklist[this.state.metadataType.value] !== undefined)
-                                    this.setState({selection: newBlacklist[this.state.metadataType.value]});
-                                else this.setState({selection: []});
-                            });
-                        } else window.alert('Blacklist ' + blackListName + ' does not exist')
-                    });
-                }
-            });
-        };
-
-        let loadDefaultBlacklist = () => {
-            store.dispatch({type: actionTypes.UPDATE_USER_BLACKLIST, blacklist: defaultBlacklist});
-            if (this.state.metadataType !== undefined && defaultBlacklist[this.state.metadataType.value] !== undefined)
-                this.setState({selection: defaultBlacklist[this.state.metadataType.value]});
-            else this.setState({selection: []});
-        };
+        console.log(metadataType)
 
         return (
             <Dialog fullWidth={true} maxWidth={"md"} onClose={this.handleClose} {...other}>
                 <Grid
-                    rows={this.state.rows}
+                    rows={metadataType.rows}
                     columns={columns}
                     getRowId={this.getRowId}
                 >
                     <SelectionState
-                        selection={this.state.selection}
+                        selection={selection}
                         onSelectionChange={this.onSelectionChange}
                     />
 
@@ -154,13 +171,13 @@ class AdminDialog extends React.PureComponent {
                         name="toolbarContent"
                     >
                         <TemplatePlaceholder/>
-                        <Button onClick={saveBlacklist}>
+                        <Button onClick={this.saveBlacklist}>
                             Save
                         </Button>
-                        <Button onClick={loadBlacklist}>
+                        <Button onClick={this.loadBlacklist}>
                             Load
                         </Button>
-                        <Button onClick={loadDefaultBlacklist}>
+                        <Button onClick={this.loadDefaultBlacklist}>
                             Default
                         </Button>
                         <Spacer grow='1'/>
@@ -168,8 +185,8 @@ class AdminDialog extends React.PureComponent {
                             <Select
                                 placeholder={'Select metadata type...'}
                                 onChange={this.onMetadataTypeChange}
-                                options={metadataTypes}
-                                value={this.state.metadataType}
+                                options={this.metadataTypes}
+                                value={metadataType}
                             />
                         </div>
                     </Template>

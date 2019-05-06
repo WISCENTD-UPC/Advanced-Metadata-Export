@@ -1,6 +1,6 @@
 {
     "name": "advanced-export",
-    "version": "0.2.9",
+    "version": "0.2.10",
     "private": true,
     "dependencies": {
         "@devexpress/dx-react-core": "1.4.0",
@@ -49,7 +49,7 @@
     "manifest.webapp": {
         "name": "Advanced Export",
         "description": "Export App with recursive metadata fetching",
-        "version": "0.2.9",
+        "version": "0.2.10",
         "developer": {
             "name": "Alexis Rico",
             "url": "https://github.com/SferaDev"

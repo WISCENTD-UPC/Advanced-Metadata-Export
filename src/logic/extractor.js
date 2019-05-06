@@ -149,12 +149,15 @@ ExtractorClass.prototype.shouldDeepCopy = function (type, key) {
         }
     }
 
-    _.forOwn(this.blacklist, (metadataType, items) => {
+    let deepCopy = true;
+
+    _.forOwn(this.blacklist, (items, metadataType) => {
         if (metadataType === "*" || metadataType === type) {
-            if (items.includes(key)) return false;
+            if (items.includes(key)) deepCopy = false;
         }
     });
-    return true;
+
+    return deepCopy;
 };
 
 ExtractorClass.prototype.attachToExecutor = async function () {

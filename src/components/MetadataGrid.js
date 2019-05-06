@@ -96,6 +96,8 @@ class MetadataGrid extends React.PureComponent {
         const openOptions = () => this.props.showOptionsDialog();
         const openAdmin = () => this.props.showAdminDialog();
 
+        const dependenciesRows = _.uniq(_.concat(selection, ...selectionAsIndeterminate).map((id) => rows.find((e => e.id === id))));
+
         return (
             <div className="main-container" style={{margin: "1em", marginTop: "3em"}}>
                 <Paper style={{margin: "1em"}}>
@@ -153,7 +155,7 @@ class MetadataGrid extends React.PureComponent {
                 <div className="export-container">
                     <Paper style={{margin: "1em"}}>
                         <Grid
-                            rows={_.uniq(_.concat(selection, ...selectionAsIndeterminate).map((id) => rows.find((e => e.id === id))))}
+                            rows={dependenciesRows}
                             columns={columns}
                             getRowId={this.getRowId}
                         >
