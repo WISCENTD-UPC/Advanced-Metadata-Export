@@ -38,16 +38,56 @@ export let dependencyRules = [
 export const namespaceName = 'export-metadata-blacklist';
 export let defaultBlacklist = {
     "*": [],
+    "category": [
+        "categoryCombo",
+        "categoryOption"
+    ],
     "categoryCombo": [
         "category"
     ],
     "categoryOption": [
-        "category", "categoryOptionCombo"
+        "category",
+        "categoryOptionCombo"
     ],
     "categoryOptionCombo": [
         "categoryCombo"
     ],
     "dataElement": [
         "dataSet"
+    ],
+    "dataElementGroup": [
+        "dataElement"
+    ],
+    "programSection": [
+        "program"
+    ],
+    "programIndicator": [
+        "program"
+    ],
+    "programRuleVariable": [
+        "program"
+    ],
+    "indicator": [
+        "dataSet"
+    ],
+    "organisationUnit": [
+        "dataSet",
+        "program"
+    ],
+    "section": [
+        "dataSet"
+    ],
+    "dataApprovalWorkflow": [
+        "dataSet"
+    ],
+    "dataSetElement": [
+        "dataSet"
+    ],
+    "program": [
+        "userRole"
+    ],
+    "mapView": [
+        "program",
+        "programStage"
     ]
 };
